@@ -49,7 +49,7 @@ interface TodayCardProps {
   gifCount?: number
 }
 
-export const TodayCard = ({ workout, streak, dayLabel = "Hoy", previewGifs = [], gifCount = 0 }: TodayCardProps) => {
+export const TodayCard = ({ workout, dayLabel = "Hoy", previewGifs = [], gifCount = 0 }: TodayCardProps) => {
   const slots = gifCount > 0 ? gifCount : previewGifs.length
   const showHero = workout && slots > 0
   const isLoadingGifs = gifCount > 0 && previewGifs.length === 0
