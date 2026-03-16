@@ -1,17 +1,9 @@
 import { Check, Play } from "lucide-react"
-import { useState, useEffect, useRef } from "react"
 import { Link } from "react-router-dom"
 import { EmptyState } from "@/components/shared/EmptyState"
 import { Skeleton } from "@/components/ui/skeleton"
 
 function GifSlot({ url, last }: { url: string | null; last: boolean }) {
-  const [_, setLoaded] = useState(false)
-  const imgRef = useRef<HTMLImageElement>(null)
-
-  useEffect(() => {
-    if (imgRef.current?.complete) setLoaded(true)
-  }, [url])
-
   return (
     <div
       className="flex-1 relative overflow-hidden"
@@ -20,11 +12,9 @@ function GifSlot({ url, last }: { url: string | null; last: boolean }) {
       <Skeleton className="absolute inset-0 rounded-none" />
       {url && (
         <img
-          ref={imgRef}
           src={url}
           alt=""
-          onLoad={() => setLoaded(true)}
-          className={`absolute inset-0 w-full h-full object-cover`}
+          className="absolute inset-0 w-full h-full object-cover"
         />
       )}
       <div className="absolute inset-0 bg-linear-to-b from-transparent to-[#0b0b0b]" />

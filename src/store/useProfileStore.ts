@@ -25,11 +25,12 @@ export const useProfileStore = create<ProfileState>()(
 
     loadFromSupabase: async (userId: string) => {
       set({ loadingProfile: true })
-      const { data } = await supabase
+      const { data, error } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('user_id', userId)
         .single()
+      if (error && error.code !== 'PGRST116') console.error('Error cargando perfil:', error.message)
       if (data) {
         set({
           profile: {
@@ -47,10 +48,11 @@ export const useProfileStore = create<ProfileState>()(
     },
 
     saveProfile: async (userId: string, profile: UserProfile) => {
-      await supabase.from('user_profiles').upsert(
+      const { error } = await supabase.from('user_profiles').upsert(
         { user_id: userId, ...profile, updated_at: new Date().toISOString() },
         { onConflict: 'user_id' }
       )
+      if (error) throw new Error(error.message)
       set({ profile, hasProfile: true })
     },
 

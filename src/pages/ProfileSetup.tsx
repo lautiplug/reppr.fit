@@ -15,6 +15,7 @@ export const ProfileSetup = () => {
 
   const [step, setStep] = useState(0)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const [sex, setSex] = useState<Sex | null>(null)
   const [birthYear, setBirthYear] = useState('')
@@ -41,8 +42,12 @@ export const ProfileSetup = () => {
       weight_kg: Number(weight),
       height_cm: Number(height),
     }
-    await saveProfile(user.id, profile)
-    navigate('/', { replace: true })
+    try {
+      await saveProfile(user.id, profile)
+      navigate('/', { replace: true })
+    } catch {
+      setSaveError('No se pudo guardar tu perfil. Intentá de nuevo.')
+    }
   }
 
   const progress = ((step + 1) / STEPS) * 100
@@ -61,8 +66,7 @@ export const ProfileSetup = () => {
       {step > 0 && (
         <button
           onClick={() => setStep(s => s - 1)}
-          className="flex items-center gap-1 text-[#8E8E93] mb-8 w-fit cursor-pointer"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          className="flex items-center gap-1 text-[#8E8E93] mb-8 w-fit cursor-pointer font-body"
         >
           <ChevronLeft size={18} />
           <span className="text-sm">Atrás</span>
@@ -89,11 +93,13 @@ export const ProfileSetup = () => {
       <button
         onClick={handleNext}
         disabled={!canNext || saving}
-        className="w-full py-4 rounded-2xl font-bold text-base bg-[#9BFF30] text-black disabled:opacity-30 transition-opacity cursor-pointer disabled:cursor-default"
-        style={{ fontFamily: 'DM Sans, sans-serif' }}
+        className="w-full py-4 rounded-2xl font-bold text-base bg-[#9BFF30] text-black disabled:opacity-30 transition-opacity cursor-pointer disabled:cursor-default font-body"
       >
         {saving ? 'Guardando...' : step === STEPS - 1 ? 'Empezar' : 'Continuar'}
       </button>
+      {saveError && (
+        <p className="text-red-400 text-sm text-center mt-3">{saveError}</p>
+      )}
     </div>
   )
 }
@@ -102,10 +108,10 @@ export const ProfileSetup = () => {
 
 const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) => void }) => (
   <div>
-    <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Con qué sexo te identificás?
     </h2>
-    <p className="text-[#8E8E93] text-sm mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <p className="text-[#8E8E93] text-sm mb-10 font-body">
       Lo usamos para personalizar tu entrenamiento.
     </p>
     <div className="flex flex-col gap-3">
@@ -117,12 +123,11 @@ const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) =>
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
-          className={`w-full py-4 px-5 rounded-2xl text-left font-medium text-base transition-all cursor-pointer ${
+          className={`w-full py-4 px-5 rounded-2xl text-left font-medium text-base transition-all cursor-pointer font-body ${
             value === opt.value
               ? 'bg-[#9BFF30] text-black'
               : 'bg-[#1C1C1E] text-white'
           }`}
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
         >
           {opt.label}
         </button>
@@ -133,10 +138,10 @@ const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) =>
 
 const StepBirthYear = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <div>
-    <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿En qué año naciste?
     </h2>
-    <p className="text-[#8E8E93] text-sm mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <p className="text-[#8E8E93] text-sm mb-10 font-body">
       Calculamos tu edad para ajustar la intensidad.
     </p>
     <input
@@ -145,8 +150,7 @@ const StepBirthYear = ({ value, onChange }: { value: string; onChange: (v: strin
       placeholder="1990"
       value={value}
       onChange={e => onChange(e.target.value)}
-      className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors"
-      style={{ fontFamily: 'Syne, sans-serif' }}
+      className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors font-display"
       min={1930}
       max={2010}
     />
@@ -155,10 +159,10 @@ const StepBirthYear = ({ value, onChange }: { value: string; onChange: (v: strin
 
 const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <div>
-    <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Cuánto pesás?
     </h2>
-    <p className="text-[#8E8E93] text-sm mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <p className="text-[#8E8E93] text-sm mb-10 font-body">
       En kilogramos. Sirve para calcular cargas relativas.
     </p>
     <div className="relative">
@@ -168,10 +172,9 @@ const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) 
         placeholder="75"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16"
-        style={{ fontFamily: 'Syne, sans-serif' }}
+        className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16 font-display"
       />
-      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium font-body">
         kg
       </span>
     </div>
@@ -180,10 +183,10 @@ const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) 
 
 const StepHeight = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
   <div>
-    <h2 className="text-3xl font-black text-white mb-2" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Cuánto medís?
     </h2>
-    <p className="text-[#8E8E93] text-sm mb-10" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+    <p className="text-[#8E8E93] text-sm mb-10 font-body">
       En centímetros.
     </p>
     <div className="relative">
@@ -193,10 +196,9 @@ const StepHeight = ({ value, onChange }: { value: string; onChange: (v: string) 
         placeholder="175"
         value={value}
         onChange={e => onChange(e.target.value)}
-        className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16"
-        style={{ fontFamily: 'Syne, sans-serif' }}
+        className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16 font-display"
       />
-      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+      <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium font-body">
         cm
       </span>
     </div>

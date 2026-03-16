@@ -1,3 +1,4 @@
+import { MUSCLE_LABELS } from "@/lib/constants";
 import type {
   DaySchedule,
   Equipment,
@@ -210,18 +211,6 @@ function getSplit(goal: TrainingGoal, days: number): WorkoutDay[] {
 
 // ─── 5. MAIN ─────────────────────────────────────────────────────────────────
 
-const MUSCLE_LABELS: Record<MuscleGroup, string> = {
-  chest: 'Pecho',
-  back: 'Espalda',
-  shoulders: 'Hombros',
-  biceps: 'Bíceps',
-  triceps: 'Tríceps',
-  legs: 'Piernas',
-  glutes: 'Glúteos',
-  core: 'Core',
-  calves: 'Pantorrillas',
-  forearms: 'Antebrazos',
-}
 
 import { FEATURED_EXERCISES, exercisesPerMuscle } from "./featuredExercises";
 

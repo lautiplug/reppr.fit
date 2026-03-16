@@ -4,7 +4,6 @@ import { TrainingDay } from "@/components/excercises/TrainingDay";
 import { RestDay } from "@/components/excercises/RestDay";
 import {
   getDayLabel,
-  getDayLabelFull,
   getTodayKey,
 } from "@/components/excercises/utils";
 import { useRoutineStore } from "@/store/useRoutineStore";
@@ -48,7 +47,7 @@ export const Excercises = () => {
         onSelectDay={setSelectedDay}
         trainingDays={trainingDays}
         workoutName={daySchedule.workoutName}
-        dayLabel={getDayLabel(selectedDay, daySchedule)}
+        dayLabel={getDayLabel(selectedDay)}
         muscleGroups={daySchedule.muscleGroups}
         exercises={daySchedule.exercises}
         stats={{
@@ -70,7 +69,7 @@ export const Excercises = () => {
       nextWorkout={
         next
           ? {
-              dayLabel: getDayLabelFull(next.day),
+              dayLabel: getDayLabel(next.day),
               name: next.schedule.workoutName,
               exerciseCount: next.schedule.exercises.length,
               durationMin: next.schedule.exercises.reduce((acc, ex) => acc + ex.sets.length, 0) * 3,

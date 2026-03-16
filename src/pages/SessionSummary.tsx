@@ -43,7 +43,7 @@ export default function SessionSummary() {
         <div className="w-16 h-16 rounded-full bg-[#9BFF30]/15 flex items-center justify-center">
           <CheckCircle className="w-8 h-8 text-[#9BFF30]" />
         </div>
-        <h1 className="font-black text-white text-3xl text-center" style={{ fontFamily: 'Syne, sans-serif' }}>
+        <h1 className="font-black text-white text-3xl text-center font-display">
           ¡Entrenamiento completado!
         </h1>
         <p className="text-[#8E8E93] text-base text-center">{session.workoutName}</p>

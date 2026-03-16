@@ -20,13 +20,13 @@ export const Navbar = () => {
           />
         ) : (
           <div className="w-12 h-12 rounded-full bg-[#2C2C2E] flex items-center justify-center">
-            <span className="text-white text-lg font-bold" style={{ fontFamily: 'Syne, sans-serif' }}>
+            <span className="text-white text-lg font-bold font-display">
               {name[0].toUpperCase()}
             </span>
           </div>
         )}
         <div>
-          <h1 className="text-2xl font-medium text-white" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+          <h1 className="text-2xl font-medium text-white font-body">
             Hola, {name}
           </h1>
         </div>

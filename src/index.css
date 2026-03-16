@@ -68,6 +68,11 @@ button, a {
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: 'Geist Variable', sans-serif;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --color-brand: #9BFF30;
+  --color-surface: #F7F7F5;
+  --color-dark: #1C1C1E;
   --animate-shine: shine var(--duration) infinite linear;
   @keyframes shine {
   0% {

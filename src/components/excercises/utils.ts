@@ -1,15 +1,11 @@
-import type { DaySchedule, WeekDay } from "@/types";
+import type { WeekDay } from "@/types";
 
 const DAY_NAMES: Record<WeekDay, string> = {
   lun: "LUNES", mar: "MARTES", mie: "MIÉRCOLES",
   jue: "JUEVES", vie: "VIERNES", sab: "SÁBADO", dom: "DOMINGO",
 };
 
-export function getDayLabel(day: WeekDay, _schedule: DaySchedule): string {
-  return DAY_NAMES[day];
-}
-
-export function getDayLabelFull(day: WeekDay): string {
+export function getDayLabel(day: WeekDay): string {
   return DAY_NAMES[day];
 }
 

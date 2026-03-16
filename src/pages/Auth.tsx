@@ -25,14 +25,12 @@ export const Auth = () => {
         {/* Brand */}
         <div className="flex flex-col items-center gap-2">
           <h1
-            className="text-5xl font-bold text-white tracking-tight"
-            style={{ fontFamily: 'Syne, sans-serif' }}
+            className="text-5xl font-bold text-white tracking-tight font-display"
           >
             reppr.fit
           </h1>
           <p
-            className="text-base text-[#8E8E93]"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="text-base text-[#8E8E93] font-body"
           >
             Entrená con propósito.
           </p>
@@ -43,8 +41,7 @@ export const Auth = () => {
           <button
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full flex items-center justify-center gap-3 bg-white text-black font-medium text-base rounded-full py-3 px-6 disabled:opacity-60 transition-opacity"
-            style={{ fontFamily: 'DM Sans, sans-serif' }}
+            className="w-full flex items-center justify-center gap-3 bg-white text-black font-medium text-base rounded-full py-3 px-6 disabled:opacity-60 transition-opacity font-body"
           >
             {loading ? (
               <span className="w-5 h-5 border-2 border-black/20 border-t-black rounded-full animate-spin" />
@@ -81,8 +78,7 @@ export const Auth = () => {
 
           {error && (
             <p
-              className="text-sm text-red-500 text-center"
-              style={{ fontFamily: 'DM Sans, sans-serif' }}
+              className="text-sm text-red-500 text-center font-body"
             >
               {error}
             </p>
@@ -91,8 +87,7 @@ export const Auth = () => {
 
         {/* Fine print */}
         <p
-          className="text-xs text-[#8E8E93] text-center"
-          style={{ fontFamily: 'DM Sans, sans-serif' }}
+          className="text-xs text-[#8E8E93] text-center font-body"
         >
           Al continuar aceptás los términos de uso.
         </p>

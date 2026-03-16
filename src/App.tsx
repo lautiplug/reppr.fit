@@ -36,7 +36,7 @@ const AppLayout = () => (
 
 const SplashScreen = () => (
   <div className="min-h-screen bg-[#1C1C1E] flex flex-col items-center justify-center gap-4">
-    <p className="text-white font-black text-3xl animate-[fadeIn_0.4s_ease-out]" style={{ fontFamily: 'Syne, sans-serif' }}>
+    <p className="text-white font-black text-3xl animate-[fadeIn_0.4s_ease-out] font-display">
       reppr.fit
     </p>
     <div className="flex gap-1.5 animate-[fadeIn_0.4s_ease-out_0.2s_both]">

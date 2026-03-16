@@ -11,23 +11,12 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced
 }
 import type { WeekDay, MuscleGroup, DayExercise, DaySchedule, Exercise } from '@/types'
+import { MUSCLE_LABELS } from '@/lib/constants'
 import { useExercises } from '@/hooks/useExercises'
 import { useRoutineStore } from '@/store/useRoutineStore'
 import { supabase } from '@/lib/supabase'
 import { suggestWorkoutName } from '@/lib/workoutName'
 
-const MUSCLE_LABELS: Record<MuscleGroup, string> = {
-  chest: 'Pecho',
-  back: 'Espalda',
-  shoulders: 'Hombros',
-  biceps: 'Bíceps',
-  triceps: 'Tríceps',
-  legs: 'Piernas',
-  glutes: 'Glúteos',
-  core: 'Core',
-  calves: 'Pantorrillas',
-  forearms: 'Antebrazos',
-}
 
 const ALL_MUSCLES = Object.keys(MUSCLE_LABELS) as MuscleGroup[]
 
@@ -92,7 +81,9 @@ export const DayEditor = () => {
   }, [])
 
   const loadMoreRef = useRef(loadMore)
-  loadMoreRef.current = loadMore
+  useEffect(() => {
+    loadMoreRef.current = loadMore
+  })
 
   const sentinelRef = useCallback((el: HTMLDivElement | null) => {
     if (!el) return
@@ -167,15 +158,14 @@ export const DayEditor = () => {
               onChange={e => { setWorkoutName(e.target.value); setNameEdited(true) }}
               onBlur={() => setEditingName(false)}
               onKeyDown={e => e.key === 'Enter' && setEditingName(false)}
-              className="font-black text-xl text-white leading-tight bg-transparent outline-none border-b-2 border-[#9BFF30] w-full"
-              style={{ fontFamily: 'Syne, sans-serif' }}
+              className="font-black text-xl text-white leading-tight bg-transparent outline-none border-b-2 border-[#9BFF30] w-full font-display"
             />
           ) : (
             <button
               onClick={() => setEditingName(true)}
               className="flex items-center gap-2 group"
             >
-              <h2 className="font-black text-xl text-white leading-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+              <h2 className="font-black text-xl text-white leading-tight font-display">
                 {displayName}
               </h2>
               <Pencil className="w-3.5 h-3.5 text-[#8E8E93] group-hover:text-white transition-colors" />
@@ -186,8 +176,7 @@ export const DayEditor = () => {
         {selectedExercises.length > 0 && (
           <button
             onClick={handleSave}
-            className="shrink-0 px-4 py-2 bg-white text-black text-sm font-bold rounded-full"
-            style={{ fontFamily: 'Syne, sans-serif' }}
+            className="shrink-0 px-4 py-2 bg-white text-black text-sm font-bold rounded-full font-display"
           >
             Guardar ({selectedExercises.length})
           </button>
@@ -260,7 +249,7 @@ export const DayEditor = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className={`font-bold text-sm leading-tight ${selected ? 'text-white' : 'text-white'}`} style={{ fontFamily: 'Syne, sans-serif' }}>
+                  <p className={`font-bold text-sm leading-tight font-display ${selected ? 'text-white' : 'text-white'}`}>
                     {ex.name_es ?? ex.name}
                   </p>
                   {ex.secondary_muscles && ex.secondary_muscles.length > 0 && (

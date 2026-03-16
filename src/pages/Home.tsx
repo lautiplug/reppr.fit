@@ -49,7 +49,8 @@ export const Home = () => {
       .from("exercises")
       .select("name, gif_url")
       .in("name", missingNames)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) { console.error('Error cargando gifs:', error.message); return; }
         const gifByName: Record<string, string> = {};
         if (data) for (const row of data) if (row.gif_url) gifByName[row.name] = row.gif_url;
         setPreviewGifs(exercises.map(e => e.gif_url ?? gifByName[e.name] ?? "").filter(Boolean));

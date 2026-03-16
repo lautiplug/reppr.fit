@@ -8,7 +8,7 @@ import { ExerciseFlip } from "./ExerciseFlip";
 export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex: number }) {
   const [expanded, setExpanded] = useState(true);
   const { gifLoaded, onLoad } = useGifLoader();
-  const { toggleSet, updateSet, skipExercise } = useSessionStore();
+  const { toggleSet, updateSet, skipExercise, removeSet, addSet } = useSessionStore();
 
   const completedCount = ex.sets.filter((s) => s.completed).length;
   const allDone = completedCount === ex.sets.length;
@@ -105,24 +105,14 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
           <div className="flex gap-2 mt-1">
             {ex.sets.length > 1 && (
               <button
-                onClick={() => useSessionStore.setState(s => ({
-                  active: s.active ? { ...s.active, exercises: s.active.exercises.map((e, i) =>
-                    i === exIndex ? { ...e, sets: e.sets.slice(0, -1) } : e
-                  )} : null
-                }))}
+                onClick={() => removeSet(exIndex)}
                 className="flex-1 h-9 rounded-xl border border-dashed border-[#3A3A3C] flex items-center justify-center gap-1.5 text-[12px] font-semibold text-[#8E8E93] hover:border-white hover:text-white transition-colors"
               >
                 <X className="w-3 h-3" /> Quitar serie
               </button>
             )}
             <button
-              onClick={() => useSessionStore.setState(s => ({
-                active: s.active ? { ...s.active, exercises: s.active.exercises.map((e, i) => {
-                  if (i !== exIndex) return e;
-                  const last = e.sets[e.sets.length - 1];
-                  return { ...e, sets: [...e.sets, { reps: last?.reps ?? 10, weight_kg: last?.weight_kg, completed: false }] };
-                })} : null
-              }))}
+              onClick={() => addSet(exIndex)}
               className="flex-1 h-9 rounded-xl border border-dashed border-[#3A3A3C] flex items-center justify-center gap-1.5 text-[12px] font-semibold text-[#8E8E93] hover:border-white hover:text-white transition-colors"
             >
               <Plus className="w-3 h-3" /> Agregar serie
