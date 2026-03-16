@@ -67,7 +67,7 @@ export const TrainingDay = ({
     >
       {active && (
         <div
-          className="fixed top-0 left-0 right-0 z-20 bg-[#1C1C1E] px-5 pb-3"
+          className="fixed top-0 left-0 right-0 z-20 bg-dark px-5 pb-3"
           style={{ paddingTop: "calc(env(safe-area-inset-top, 0px) + 1rem)" }}
         >
           <div className="flex justify-between items-center mb-2">
@@ -91,7 +91,7 @@ export const TrainingDay = ({
               </button>
               <button
                 onClick={handleFinish}
-                className="text-[13px] font-semibold bg-[#9BFF30] text-[#1C1C1E] px-2 py-1 rounded-xl"
+                className="text-[13px] font-semibold bg-brand text-dark px-2 py-1 rounded-xl"
               >
                 Finalizar
               </button>
@@ -99,7 +99,7 @@ export const TrainingDay = ({
           </div>
           <div className="h-1 bg-[#3A3A3C] rounded-full overflow-hidden">
             <div
-              className="h-full bg-[#9BFF30] rounded-full transition-all duration-300"
+              className="h-full bg-brand rounded-full transition-all duration-300"
               style={{
                 width: `${totalSets > 0 ? (completedSets / totalSets) * 100 : 0}%`,
               }}
@@ -113,7 +113,7 @@ export const TrainingDay = ({
           {muscleGroups.map((group) => (
             <span
               key={group}
-              className="px-3 py-1.5 rounded-full bg-[#9BFF30]/15 text-[#9BFF30] text-[12px] font-semibold"
+              className="px-3 py-1.5 rounded-full bg-brand/15 text-brand text-[12px] font-semibold"
             >
               {group}
             </span>
@@ -123,7 +123,7 @@ export const TrainingDay = ({
         {alreadyDone ? (
           <Card className="relative w-full py-4 bg-[#191919] rounded-2xl flex items-center justify-center gap-2 overflow-hidden">
             <span className="text-white font-semibold text-base flex items-center gap-4">
-              <CheckCircle className="w-5 h-5 text-[#9BFF30]" />
+              <CheckCircle className="w-5 h-5 text-brand" />
               Entrenamiento completado
             </span>
             <ShineBorder shineColor={["gold", "gold", "gold"]} />
@@ -179,7 +179,7 @@ export const TrainingDay = ({
           ) : (
             <button
               onClick={() => startSession(workoutName, exercises)}
-              className="w-full py-4 mb-5 bg-[#9BFF30] text-black font-medium text-base rounded-2xl"
+              className="w-full py-4 mb-5 bg-brand text-black font-medium text-base rounded-2xl mt-6"
             >
               Entrenar
             </button>
