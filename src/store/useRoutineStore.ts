@@ -88,6 +88,11 @@ export const useRoutineStore = create<RoutineState>()(
     {
       name: 'routine-store',
       version: 2,
+      partialize: (state) => ({
+        schedule: state.schedule,
+        hasRoutine: state.hasRoutine,
+        lastAnswers: state.lastAnswers,
+      }),
       migrate: (persisted: unknown) => {
         const state = persisted as RoutineState
         if (state.lastAnswers && (!state.schedule || scheduleNeedsRegen(state.schedule))) {
