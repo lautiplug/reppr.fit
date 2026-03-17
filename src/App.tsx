@@ -104,16 +104,14 @@ export const App = () => {
 
       if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && session?.user) {
         const userId = session.user.id
-        // Wait for persist rehydration before loading from Supabase
-        // so active session in localStorage is not overwritten
-        useSessionStore.persist.onFinishHydration(() => {
-          useSessionStore.getState().loadFromSupabase(userId)
-        })
-        useRoutineStore.getState().loadFromSupabase?.(userId)
+        useSessionStore.getState().loadFromSupabase(userId)
+        useRoutineStore.getState().loadFromSupabase(userId)
         useProfileStore.getState().loadFromSupabase(userId)
       } else if (_event === 'INITIAL_SESSION' && !session?.user) {
         // No user — stop loading so RequireAuth can redirect to /auth
         useProfileStore.setState({ loadingProfile: false })
+        useRoutineStore.setState({ loadingRoutine: false })
+        useSessionStore.setState({ loadingHistory: false })
       }
 
       if (_event === 'SIGNED_OUT') {

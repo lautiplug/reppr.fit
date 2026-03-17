@@ -10,8 +10,24 @@ import { useRoutineStore } from "@/store/useRoutineStore";
 
 export const Excercises = () => {
   const navigate = useNavigate();
-  const { schedule, hasRoutine, selectedDay: storedDay, setSelectedDay } = useRoutineStore();
+  const { schedule, hasRoutine, loadingRoutine, selectedDay: storedDay, setSelectedDay } = useRoutineStore();
   const selectedDay = storedDay ?? getTodayKey();
+
+  if (loadingRoutine) {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center">
+        <div className="flex gap-1.5">
+          {[0, 1, 2].map(i => (
+            <div
+              key={i}
+              className="w-1.5 h-1.5 rounded-full bg-brand"
+              style={{ animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite` }}
+            />
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   if (!hasRoutine || !schedule) {
     return <Navigate to="/routines" replace />;

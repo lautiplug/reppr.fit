@@ -18,6 +18,7 @@ import type {
   TrainingGoal,
   TrainingLevel,
 } from "@/types";
+import { useRoutineStore } from "@/store/useRoutineStore";
 
 // --- comments ---
 
@@ -179,21 +180,30 @@ interface Props {
   initialAnswers?: RoutineSetupAnswers;
 }
 
+function inferStep(draft: Partial<RoutineSetupAnswers> | null): number {
+  if (!draft) return -1;
+  if (!draft.goal) return 0;
+  if (!draft.level) return 1;
+  if (!draft.daysPerWeek) return 2;
+  if (!draft.equipment) return 3;
+  return 3;
+}
+
 export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
   const navigate = useNavigate();
-  const [step, setStep] = useState(initialAnswers ? 3 : -1);
-  const [goal, setGoal] = useState<TrainingGoal | null>(
-    initialAnswers?.goal ?? null,
-  );
-  const [level, setLevel] = useState<TrainingLevel | null>(
-    initialAnswers?.level ?? null,
-  );
-  const [days, setDays] = useState<number | null>(
-    initialAnswers?.daysPerWeek ?? null,
-  );
-  const [equipment, setEquipment] = useState<Equipment | null>(
-    initialAnswers?.equipment ?? null,
-  );
+  const { draftAnswers, setDraftAnswers, clearDraftAnswers } = useRoutineStore();
+
+  const draft = draftAnswers ?? (initialAnswers ? initialAnswers : null);
+
+  const [step, setStep] = useState(() => inferStep(draft));
+  const [goal, setGoal] = useState<TrainingGoal | null>(draft?.goal ?? null);
+  const [level, setLevel] = useState<TrainingLevel | null>(draft?.level ?? null);
+  const [days, setDays] = useState<number | null>(draft?.daysPerWeek ?? null);
+  const [equipment, setEquipment] = useState<Equipment | null>(draft?.equipment ?? null);
+
+  const saveDraft = (patch: Partial<RoutineSetupAnswers>) => {
+    setDraftAnswers({ goal, level, daysPerWeek: days ?? undefined, equipment, ...patch } as Partial<RoutineSetupAnswers>);
+  };
 
   const goBack = () => {
     if (step === 0) navigate(-1);
@@ -332,7 +342,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
               <OptionButton
                 key={opt.value}
                 active={goal === opt.value}
-                onClick={() => setGoal(opt.value)}
+                onClick={() => { setGoal(opt.value); saveDraft({ goal: opt.value }); }}
               >
                 <span className="text-2xl text-[#9BFF30]">{opt.emoji}</span>
                 <div>
@@ -370,7 +380,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
               <OptionButton
                 key={opt.value}
                 active={level === opt.value}
-                onClick={() => setLevel(opt.value)}
+                onClick={() => { setLevel(opt.value); saveDraft({ level: opt.value }); }}
               >
                 <div>
                   <p
@@ -406,7 +416,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
             {DAYS_OPTIONS.map((d) => (
               <button
                 key={d}
-                onClick={() => setDays(d)}
+                onClick={() => { setDays(d); saveDraft({ daysPerWeek: d }); }}
                 className={`flex-1 py-5 rounded-2xl border-2 font-black text-2xl transition-colors ${
                   days === d
                     ? "border-[#9BFF30] bg-[#3A3A3C] text-white"
@@ -439,7 +449,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
               <OptionButton
                 key={opt.value}
                 active={equipment === opt.value}
-                onClick={() => setEquipment(opt.value)}
+                onClick={() => { setEquipment(opt.value); saveDraft({ equipment: opt.value }); }}
               >
                 <span className="text-2xl text-[#9BFF30]">{opt.emoji}</span>
                 <div>
@@ -459,15 +469,11 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
           <ContinueButton
             disabled={!equipment}
             label="Generar mi rutina"
-            onClick={() =>
-              equipment &&
-              onComplete({
-                goal: goal!,
-                level: level!,
-                daysPerWeek: days!,
-                equipment,
-              })
-            }
+            onClick={() => {
+              if (!equipment) return;
+              clearDraftAnswers();
+              onComplete({ goal: goal!, level: level!, daysPerWeek: days!, equipment });
+            }}
           />
         </>
       )}
