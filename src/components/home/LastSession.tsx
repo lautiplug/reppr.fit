@@ -27,7 +27,7 @@ export const LastSession = ({ exercises }: LastSessionProps) => {
       <div className="flex items-center justify-between mb-3">
         <h2 className="text-[17px] font-bold text-white">Última sesión</h2>
         {exercises && exercises.length > 0 && (
-          <Link to="/" className="flex items-center gap-1 text-[13px] p-2 px-4 rounded-full text-[#6B7280] font-medium">
+          <Link to="/exercises" className="flex items-center gap-1 text-[13px] p-2 px-4 rounded-full text-[#6B7280] font-medium">
             Ver más <ArrowRight size={14} />
           </Link>
         )}

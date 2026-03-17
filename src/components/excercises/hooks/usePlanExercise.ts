@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { ExerciseSet } from "@/types";
 
 export function summarizeSets(sets: ExerciseSet[]): string {
@@ -28,27 +27,3 @@ export function summarizeSets(sets: ExerciseSet[]): string {
   return `${count} × ${repsLabel}`;
 }
 
-export function usePlanExercise(initialSets: ExerciseSet[]) {
-  const [sets, setSets] = useState<ExerciseSet[]>(initialSets);
-  const [expanded, setExpanded] = useState(false);
-
-  const handleChange = (i: number, field: "reps" | "weight_kg", value: string) => {
-    setSets(prev => prev.map((s, idx) => {
-      if (idx !== i) return s;
-      if (field === "reps")
-        return { ...s, reps: value === "f" || value === "fallo" ? "fallo" : parseInt(value) || s.reps };
-      return { ...s, weight_kg: value === "" ? undefined : parseFloat(value) };
-    }));
-  };
-
-  const addSet = () => {
-    const last = sets[sets.length - 1];
-    setSets(prev => [...prev, { reps: last?.reps ?? 10, weight_kg: last?.weight_kg }]);
-  };
-
-  const removeLastSet = () => setSets(prev => prev.slice(0, -1));
-
-  const toggleExpanded = () => setExpanded(v => !v);
-
-  return { sets, expanded, toggleExpanded, handleChange, addSet, removeLastSet };
-}

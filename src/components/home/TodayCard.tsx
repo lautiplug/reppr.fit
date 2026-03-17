@@ -100,7 +100,7 @@ export const TodayCard = ({ workout, dayLabel = "Hoy", previewGifs = [], gifCoun
             description="Todavía no configuraste un plan de entrenamiento."
             action={
               <Link
-                to="/exercises/setup"
+                to="/routines"
                 className="inline-flex items-center gap-2 bg-[#9BFF30] text-black text-sm font-bold px-5 py-3 rounded-full"
               >
                 Crear rutina

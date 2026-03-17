@@ -28,7 +28,7 @@ export const RoutinesPreview = ({
         <h2 className="text-[17px] font-bold text-white">Tus rutinas</h2>
         {routines && routines.length > 0 && (
           <Link
-            to="/"
+            to="/routines"
             className="flex items-center gap-1 text-[13px] p-2 px-4 rounded-full text-[#9BFF30] font-medium"
           >
             Ver todas <ArrowRight size={14} />

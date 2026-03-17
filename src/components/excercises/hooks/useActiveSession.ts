@@ -10,12 +10,6 @@ export type SessionSummary = {
   totalKg: number;
 };
 
-function formatElapsed(startedAt: string): string {
-  const ms = Date.now() - new Date(startedAt).getTime();
-  const min = Math.floor(ms / 60000);
-  const sec = Math.floor((ms % 60000) / 1000);
-  return `${min}:${sec.toString().padStart(2, "0")}`;
-}
 
 export function useActiveSession() {
   const { finishSession, abandonSession } = useSessionStore();
@@ -25,20 +19,38 @@ export function useActiveSession() {
   const [elapsed, setElapsed] = useState("0:00");
   const [showAbandon, setShowAbandon] = useState(false);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
-  const startedAtRef = useRef<string | null>(null);
+  // pausedMs accumulates time spent with the app in background
+  const pausedMs = useRef(0);
+  const hiddenAt = useRef<number | null>(null);
 
   useEffect(() => {
-    startedAtRef.current = active?.startedAt ?? null;
-  }, [active?.startedAt]);
+    if (!active) { setElapsed("0:00"); pausedMs.current = 0; return; }
 
-  useEffect(() => {
-    if (!active) { setElapsed("0:00"); return; }
-    setElapsed(formatElapsed(active.startedAt));
-    const id = setInterval(() => {
-      if (startedAtRef.current) setElapsed(formatElapsed(startedAtRef.current));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [!!active]);
+    const tick = () => {
+      const ms = Date.now() - new Date(active.startedAt).getTime() - pausedMs.current;
+      const min = Math.floor(ms / 60000);
+      const sec = Math.floor((ms % 60000) / 1000);
+      setElapsed(`${min}:${sec.toString().padStart(2, "0")}`);
+    };
+
+    const onVisibility = () => {
+      if (document.hidden) {
+        hiddenAt.current = Date.now();
+      } else if (hiddenAt.current != null) {
+        pausedMs.current += Date.now() - hiddenAt.current;
+        hiddenAt.current = null;
+        tick();
+      }
+    };
+
+    tick();
+    const id = setInterval(tick, 1000);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearInterval(id);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [!!active, active?.startedAt]);
 
   const totalSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.length, 0) ?? 0;
   const completedSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0) ?? 0;

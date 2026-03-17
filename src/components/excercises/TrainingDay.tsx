@@ -13,11 +13,9 @@ function completedToday(
   workoutName: string,
   history: ReturnType<typeof useSessionStore.getState>["history"],
 ): boolean {
-  const today = new Date().toDateString();
+  const today = new Date().toISOString().slice(0, 10);
   return history.some(
-    (s) =>
-      new Date(s.date).toDateString() === today &&
-      s.workoutName === workoutName,
+    (s) => s.date.slice(0, 10) === today && s.workoutName === workoutName,
   );
 }
 

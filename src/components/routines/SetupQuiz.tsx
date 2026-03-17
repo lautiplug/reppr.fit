@@ -206,8 +206,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
   };
 
   const goBack = () => {
-    if (step === 0) navigate(-1);
-    else setStep((s) => s - 1);
+    setStep((s) => s - 1);
   };
 
   const advance = () => setStep((s) => s + 1);

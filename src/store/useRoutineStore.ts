@@ -77,7 +77,7 @@ export const useRoutineStore = create<RoutineState>()(
         upsertToSupabase(newSchedule, lastAnswers)
       },
 
-      clearRoutine: () => set({ schedule: null, hasRoutine: false, lastAnswers: null }),
+      clearRoutine: () => set({ schedule: null, hasRoutine: false, lastAnswers: null, draftAnswers: null }),
 
       loadFromSupabase: async (userId) => {
         set({ loadingRoutine: true })
