@@ -2,17 +2,16 @@ import { useNavigate } from "react-router-dom";
 import { CheckCircle, FileSpreadsheet, Redo2 } from "lucide-react";
 import type { DayExercise, WeekDay } from "@/types";
 import { useSessionStore } from "@/store/useSessionStore";
+import { useSessionHistoryQuery } from "@/lib/queries";
 import { useActiveSession } from "./hooks/useActiveSession";
 import { PlanExerciseRow } from "./PlanExerciseRow";
 import { ActiveExerciseRow } from "./ActiveExerciseRow";
 import { SummaryModal, AbandonModal } from "./SessionModals";
 import { Card } from "@/components/ui/card";
 import { ShineBorder } from "../ui/shine-border";
+import type { CompletedSession } from "@/types";
 
-function completedToday(
-  workoutName: string,
-  history: ReturnType<typeof useSessionStore.getState>["history"],
-): boolean {
+function completedToday(workoutName: string, history: CompletedSession[]): boolean {
   const today = new Date().toISOString().slice(0, 10);
   return history.some(
     (s) => s.date.slice(0, 10) === today && s.workoutName === workoutName,
@@ -41,7 +40,7 @@ export const TrainingDay = ({
 }: Props) => {
   const navigate = useNavigate();
   const { startSession } = useSessionStore();
-  const history = useSessionStore((s) => s.history);
+  const { data: history = [] } = useSessionHistoryQuery();
   const {
     active,
     elapsed,

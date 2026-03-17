@@ -3,24 +3,23 @@ import { useState } from "react";
 import type { RoutineSetupAnswers } from "@/types";
 import { SetupQuiz } from "@/components/routines/SetupQuiz";
 import { WeekEditor } from "@/components/routines/WeekEditor";
-import { useRoutineStore } from "@/store/useRoutineStore";
+import { useRoutineQuery, useGenerateRoutineMutation, useClearRoutineMutation } from "@/lib/queries";
 
 export const Routines = () => {
   const navigate = useNavigate();
-  const { schedule, hasRoutine, loadingRoutine, lastAnswers, generateFromAnswers, clearRoutine } = useRoutineStore();
-  // true si el usuario completó el quiz en esta misma visita a /routines
+  const { data, isLoading } = useRoutineQuery();
+  const generateRoutine = useGenerateRoutineMutation();
+  const clearRoutine = useClearRoutineMutation();
   const [cameFromQuiz, setCameFromQuiz] = useState(false);
 
   const handleQuizComplete = (answers: RoutineSetupAnswers) => {
-    generateFromAnswers(answers);
+    generateRoutine.mutate(answers);
     setCameFromQuiz(true);
   };
 
-  const handleConfirm = () => {
-    navigate("/exercises");
-  };
+  const handleConfirm = () => navigate("/exercises");
 
-  if (loadingRoutine) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex gap-1.5">
@@ -36,11 +35,18 @@ export const Routines = () => {
     );
   }
 
-  if (!hasRoutine || !schedule) {
-    return <SetupQuiz onComplete={handleQuizComplete} initialAnswers={lastAnswers ?? undefined} />;
+  if (!data?.schedule) {
+    return <SetupQuiz onComplete={handleQuizComplete} initialAnswers={data?.lastAnswers ?? undefined} />;
   }
 
-  const handleBack = cameFromQuiz ? clearRoutine : () => navigate(-1);
-
-  return <WeekEditor schedule={schedule} onConfirm={handleConfirm} onBack={handleBack} onReset={clearRoutine} />;
+  const handleBack = cameFromQuiz ? () => clearRoutine.mutate() : () => navigate(-1);
+  const handleReset = () => clearRoutine.mutate();
+  return (
+    <WeekEditor
+      schedule={data.schedule}
+      onConfirm={handleConfirm}
+      onBack={handleBack}
+      onReset={handleReset}
+    />
+  );
 };

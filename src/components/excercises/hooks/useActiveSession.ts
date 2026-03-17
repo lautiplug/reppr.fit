@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSessionStore } from "@/store/useSessionStore";
+import { useAuthStore } from "@/store/useAuthStore";
+import { queryKeys } from "@/lib/queries";
 
 export type SessionSummary = {
   workoutName: string;
@@ -15,6 +18,8 @@ export function useActiveSession() {
   const { finishSession, abandonSession } = useSessionStore();
   const active = useSessionStore(s => s.active);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const userId = useAuthStore(s => s.user?.id);
 
   const [elapsed, setElapsed] = useState("0:00");
   const [showAbandon, setShowAbandon] = useState(false);
@@ -65,6 +70,7 @@ export function useActiveSession() {
     const durationMin = Math.round((Date.now() - new Date(active.startedAt).getTime()) / 60000);
     setSummary({ workoutName: active.workoutName, durationMin, completedSets: completedSetsCount, totalSets: totalSetsCount, totalKg });
     finishSession();
+    if (userId) queryClient.invalidateQueries({ queryKey: queryKeys.sessionHistory(userId) });
     navigate('/session/summary');
   };
 

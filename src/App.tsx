@@ -1,9 +1,11 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { useEffect } from 'react'
 import { useAuthStore } from '@/store/useAuthStore'
+import { useProfileStore } from '@/store/useProfileStore'
 import { useRoutineStore } from '@/store/useRoutineStore'
 import { useSessionStore } from '@/store/useSessionStore'
-import { useProfileStore } from '@/store/useProfileStore'
+import { useQueryClient } from '@tanstack/react-query'
+import { queryKeys } from '@/lib/queries'
 import { supabase } from '@/lib/supabase'
 import { Auth } from '@/pages/Auth'
 import { Home } from '@/pages/Home'
@@ -96,6 +98,7 @@ const RequireSetup = () => {
 export const App = () => {
   const init = useAuthStore(s => s.init)
   const setUser = useAuthStore(s => s.setUser)
+  const queryClient = useQueryClient()
 
   useEffect(() => {
     init()
@@ -103,25 +106,20 @@ export const App = () => {
       setUser(session?.user ?? null)
 
       if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && session?.user) {
-        const userId = session.user.id
-        useSessionStore.getState().loadFromSupabase(userId)
-        useRoutineStore.getState().loadFromSupabase(userId)
-        useProfileStore.getState().loadFromSupabase(userId)
+        useProfileStore.getState().loadFromSupabase(session.user.id)
       } else if (_event === 'INITIAL_SESSION' && !session?.user) {
-        // No user — stop loading so RequireAuth can redirect to /auth
         useProfileStore.setState({ loadingProfile: false })
-        useRoutineStore.setState({ loadingRoutine: false })
-        useSessionStore.setState({ loadingHistory: false })
       }
 
       if (_event === 'SIGNED_OUT') {
-        useRoutineStore.getState().clearRoutine()
-        useSessionStore.setState({ history: [], active: null })
+        useSessionStore.setState({ active: null })
+        useRoutineStore.getState().clearDraftAnswers()
         useProfileStore.getState().clearProfile()
+        queryClient.clear()
       }
     })
     return () => subscription.unsubscribe()
-  }, [init, setUser])
+  }, [init, setUser, queryClient])
 
   return (
     <BrowserRouter>

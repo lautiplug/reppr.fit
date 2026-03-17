@@ -2,18 +2,17 @@ import { Navigate, useNavigate } from "react-router-dom";
 import type { WeekDay, DaySchedule } from "@/types";
 import { TrainingDay } from "@/components/excercises/TrainingDay";
 import { RestDay } from "@/components/excercises/RestDay";
-import {
-  getDayLabel,
-  getTodayKey,
-} from "@/components/excercises/utils";
+import { getDayLabel, getTodayKey } from "@/components/excercises/utils";
 import { useRoutineStore } from "@/store/useRoutineStore";
+import { useRoutineQuery } from "@/lib/queries";
 
 export const Excercises = () => {
   const navigate = useNavigate();
-  const { schedule, hasRoutine, loadingRoutine, selectedDay: storedDay, setSelectedDay } = useRoutineStore();
+  const { selectedDay: storedDay, setSelectedDay } = useRoutineStore();
+  const { data, isLoading } = useRoutineQuery();
   const selectedDay = storedDay ?? getTodayKey();
 
-  if (loadingRoutine) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
         <div className="flex gap-1.5">
@@ -29,9 +28,11 @@ export const Excercises = () => {
     );
   }
 
-  if (!hasRoutine || !schedule) {
+  if (!data?.schedule) {
     return <Navigate to="/routines" replace />;
   }
+
+  const { schedule } = data;
 
   const getDaySchedule = (day: WeekDay): DaySchedule => schedule[day] ?? { type: "rest" };
 
@@ -56,7 +57,6 @@ export const Excercises = () => {
 
   if (daySchedule.type === "training") {
     const totalSets = daySchedule.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
-
     return (
       <TrainingDay
         selectedDay={selectedDay}

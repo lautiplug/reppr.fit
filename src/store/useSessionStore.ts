@@ -30,25 +30,20 @@ interface ActiveSession {
 
 interface SessionState {
   active: ActiveSession | null
-  history: CompletedSession[]
-  loadingHistory: boolean
   startSession: (workoutName: string, exercises: DayExercise[]) => Promise<void>
   toggleSet: (exerciseIndex: number, setIndex: number) => void
   updateSet: (exerciseIndex: number, setIndex: number, data: Partial<Pick<ActiveSet, 'reps' | 'weight_kg'>>) => void
   skipExercise: (exerciseIndex: number) => void
   removeSet: (exerciseIndex: number) => void
   addSet: (exerciseIndex: number) => void
-  finishSession: () => void
+  finishSession: () => CompletedSession | null
   abandonSession: () => void
-  loadFromSupabase: (userId: string) => Promise<void>
 }
 
 export const useSessionStore = create<SessionState>()(
   persist(
     (set, get) => ({
       active: null,
-      history: [],
-      loadingHistory: true,
 
       startSession: async (workoutName, exercises) => {
         const missing = exercises.filter(ex => !ex.gif_url).map(ex => ex.name)
@@ -112,7 +107,7 @@ export const useSessionStore = create<SessionState>()(
 
       finishSession: () => {
         const { active } = get()
-        if (!active) return
+        if (!active) return null
         const durationMin = Math.round(
           (Date.now() - new Date(active.startedAt).getTime()) / 60000
         )
@@ -134,8 +129,7 @@ export const useSessionStore = create<SessionState>()(
             }
           }),
         }
-        // Optimistic update — add to local history immediately
-        set(state => ({ active: null, history: [completed, ...state.history] }))
+        set({ active: null })
 
         const userId = useAuthStore.getState().user?.id
         if (userId) {
@@ -150,6 +144,7 @@ export const useSessionStore = create<SessionState>()(
             if (error) console.error('Error guardando sesión:', error.message)
           })
         }
+        return completed
       },
 
       removeSet: (exerciseIndex) => set(state => {
@@ -183,30 +178,7 @@ export const useSessionStore = create<SessionState>()(
       }),
 
       abandonSession: () => set({ active: null }),
-
-      loadFromSupabase: async (userId) => {
-        set({ loadingHistory: true })
-        const { data, error } = await supabase
-          .from('session_history')
-          .select('*')
-          .eq('user_id', userId)
-          .order('date', { ascending: false })
-        if (error) console.error('Error cargando historial:', error.message)
-        if (data) {
-          const history: CompletedSession[] = data.map(row => ({
-            id: row.id,
-            workoutName: row.workout_name,
-            date: row.date,
-            durationMin: row.duration_min,
-            exercises: row.exercises,
-          }))
-          set({ history, loadingHistory: false })
-        } else {
-          set({ loadingHistory: false })
-        }
-      },
     }),
-    // Only persist the active session — history lives in Supabase
     { name: 'session-store', partialize: (state) => ({ active: state.active }) }
   )
 )
