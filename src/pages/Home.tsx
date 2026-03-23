@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { OverallStatus } from "@/components/home/OverallStatus";
 import { TodayCard } from "@/components/home/TodayCard";
 import { LastSession } from "@/components/home/LastSession";
@@ -7,27 +8,26 @@ import { Navbar } from "@/components/ui/Navbar";
 import { WeekStrip } from "@/components/excercises/WeekStrip";
 import { useRoutineStore } from "@/store/useRoutineStore";
 import { useSessionStore } from "@/store/useSessionStore";
+import { useRoutineQuery, useSessionHistoryQuery } from "@/lib/queries";
 import { getTodayKey } from "@/components/excercises/utils";
-import type { WeekDay } from "@/types";
-import { useState, useEffect } from "react";
 import { supabase } from "@/lib/supabase";
+import type { WeekDay, DayExercise, CompletedSession } from "@/types";
 
-const WEEK_KEYS: WeekDay[] = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"];
+const WEEK_KEYS: WeekDay[] = ["L", "M", "X", "J", "V", "S", "D"];
 
 const DAY_LABELS: Record<WeekDay, string> = {
-  lun: "Lunes",
-  mar: "Martes",
-  mie: "Miércoles",
-  jue: "Jueves",
-  vie: "Viernes",
-  sab: "Sábado",
-  dom: "Domingo",
+  L: "Lunes", M: "Martes", X: "Miércoles", J: "Jueves",
+  V: "Viernes", S: "Sábado", D: "Domingo",
 };
 
 export const Home = () => {
-  const { schedule, selectedDay: storedDay, setSelectedDay } = useRoutineStore();
-  const history = useSessionStore(s => s.history);
+  const { selectedDay: storedDay, setSelectedDay } = useRoutineStore();
+  const active = useSessionStore(s => s.active);
+  const { data: routineData } = useRoutineQuery();
+  const { data: history = [], isLoading: historyLoading } = useSessionHistoryQuery();
+  const schedule = routineData?.schedule ?? null;
   const selectedDay = storedDay ?? getTodayKey();
+
   const [previewGifs, setPreviewGifs] = useState<string[]>([]);
   const [gifCount, setGifCount] = useState(0);
 
@@ -37,30 +37,26 @@ export const Home = () => {
 
     const exercises = daySchedule.exercises.slice(0, 3);
     setGifCount(exercises.length);
-    const already = exercises.map(e => e.gif_url).filter((u): u is string => !!u);
+    const already = exercises.map((e: DayExercise) => e.gif_url).filter((u): u is string => !!u);
 
-    if (already.length === exercises.length) {
-      setPreviewGifs(already);
-      return;
-    }
+    if (already.length === exercises.length) { setPreviewGifs(already); return; }
 
-    const missingNames = exercises.filter(e => !e.gif_url).map(e => e.name);
+    const missingNames = exercises.filter((e: DayExercise) => !e.gif_url).map((e: DayExercise) => e.name);
     supabase
       .from("exercises")
       .select("name, gif_url")
       .in("name", missingNames)
       .then(({ data, error }) => {
-        if (error) { console.error('Error cargando gifs:', error.message); return; }
+        if (error) { console.error("Error cargando gifs:", error.message); return; }
         const gifByName: Record<string, string> = {};
         if (data) for (const row of data) if (row.gif_url) gifByName[row.name] = row.gif_url;
-        setPreviewGifs(exercises.map(e => e.gif_url ?? gifByName[e.name] ?? "").filter(Boolean));
+        setPreviewGifs(exercises.map((e: DayExercise) => e.gif_url ?? gifByName[e.name] ?? "").filter(Boolean));
       });
   }, [selectedDay, schedule]);
 
-  // Compute streak: count consecutive days (from today backwards) that have a completed session
   const streak = (() => {
     if (history.length === 0) return 0;
-    const sessionDays = new Set(history.map(s => s.date.slice(0, 10)));
+    const sessionDays = new Set(history.map((s: CompletedSession) => s.date.slice(0, 10)));
     let count = 0;
     const d = new Date();
     while (true) {
@@ -72,7 +68,6 @@ export const Home = () => {
     return count;
   })();
 
-  // Map last completed session to LastSession shape
   const lastSession = history[0] ?? null;
   const lastSessionExercises: SessionExercise[] | null = lastSession
     ? lastSession.exercises.map(ex => {
@@ -94,6 +89,23 @@ export const Home = () => {
       ) as Partial<Record<WeekDay, boolean>>)
     : undefined;
 
+  const completedDays = (() => {
+    if (historyLoading) return undefined;
+    const toLocalDate = (d: Date) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const sessionDates = new Set(history.map((s: CompletedSession) => toLocalDate(new Date(s.date))));
+    const today = new Date();
+    const dayOfWeek = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - ((dayOfWeek + 6) % 7));
+    const entries = WEEK_KEYS.map((key, i) => {
+      const d = new Date(monday);
+      d.setDate(monday.getDate() + i);
+      return [key, sessionDates.has(toLocalDate(d))] as const;
+    }).filter(([, v]) => v);
+    return entries.length ? Object.fromEntries(entries) as Partial<Record<WeekDay, boolean>> : undefined;
+  })();
+
   const routines = schedule
     ? WEEK_KEYS.flatMap((key) => {
         const day = schedule[key];
@@ -102,13 +114,12 @@ export const Home = () => {
       })
     : null;
 
-  const active = useSessionStore(s => s.active);
   const selectedSchedule = schedule?.[selectedDay];
   const todayKey = new Date().toISOString().slice(0, 10);
   const alreadyCompleted =
     selectedSchedule?.type === "training" &&
     !active &&
-    history.some(s => s.date.slice(0, 10) === todayKey && s.workoutName === selectedSchedule.workoutName);
+    history.some((s: CompletedSession) => s.date.slice(0, 10) === todayKey && s.workoutName === selectedSchedule.workoutName);
 
   const selectedWorkout =
     selectedSchedule?.type === "training"
@@ -134,16 +145,15 @@ export const Home = () => {
       : null;
 
   return (
-    <section className="bg-black min-h-full">
-      {/* Navbar */}
+    <section className="min-h-full">
       <Navbar />
-      {/* Scroll content */}
       <div className="pb-28 flex flex-col gap-5">
-        <div className="px-5">
+        <div className="px-3">
           <WeekStrip
             selectedDay={selectedDay}
             onSelectDay={setSelectedDay}
             trainingDays={trainingDays}
+            completedDays={completedDays}
           />
         </div>
         <div className="px-5 flex flex-col gap-5">

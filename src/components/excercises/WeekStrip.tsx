@@ -2,13 +2,13 @@ import type { WeekDay } from "@/types";
 import { getTodayKey } from "./utils";
 
 const DAYS: { key: WeekDay; label: string }[] = [
-  { key: "lun", label: "LUN" },
-  { key: "mar", label: "MAR" },
-  { key: "mie", label: "MIÉ" },
-  { key: "jue", label: "JUE" },
-  { key: "vie", label: "VIE" },
-  { key: "sab", label: "SÁB" },
-  { key: "dom", label: "DOM" },
+  { key: "L", label: "L" },
+  { key: "M", label: "M" },
+  { key: "X", label: "M" },
+  { key: "J", label: "J" },
+  { key: "V", label: "V" },
+  { key: "S", label: "S" },
+  { key: "D", label: "D" },
 ];
 
 // Returns the date number for each day of the current week (Mon–Sun)
@@ -29,51 +29,69 @@ function getCurrentWeekDates(): Record<WeekDay, number> {
   );
 }
 
-
 interface Props {
   selectedDay: WeekDay;
   onSelectDay: (day: WeekDay) => void;
   /** Optional dot indicator per day (e.g. training days) */
   trainingDays?: Partial<Record<WeekDay, boolean>>;
+  /** Days of the current week where the user already completed a session */
+  completedDays?: Partial<Record<WeekDay, boolean>>;
 }
 
-export const WeekStrip = ({ selectedDay, onSelectDay, trainingDays }: Props) => {
+export const WeekStrip = ({
+  selectedDay,
+  onSelectDay,
+  trainingDays,
+  completedDays,
+}: Props) => {
   const dates = getCurrentWeekDates();
   const todayKey = getTodayKey();
 
   return (
-    <div className="flex justify-between px-1 py-3">
+    <div className="flex justify-between px-3 py-2 bg-black rounded-full">
       {DAYS.map(({ key, label }) => {
         const isSelected = key === selectedDay;
         const isToday = key === todayKey;
         const hasTraining = trainingDays?.[key];
+        const trainedToday = completedDays?.[key];
+        const showDot = hasTraining && (isToday ? completedDays !== undefined : true);
 
         return (
           <button
             key={key}
             onClick={() => onSelectDay(key)}
-            className="flex flex-col items-center gap-1 w-10"
+            className="flex flex-col items-center gap-1 w-12"
           >
-            <span className="text-[11px] font-semibold text-white tracking-wide">
+            <span
+              className={`text-[11px] font-semiboldtracking-wide ${
+                isSelected ? "bg-white text-dark" : "text-white"
+              } px-2 py-0.5 rounded-full`}
+            >
               {label}
             </span>
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                isSelected ? "bg-[#9bff30] text-black" : "text-white"
-              }`}
+              className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors text-white`}
             >
-              <span className="font-black text-[18px]" style={{ fontFamily: "Syne, sans-serif" }}>
+              <span
+                className="font-black text-[14px]"
+                style={{ fontFamily: "Syne, sans-serif" }}
+              >
                 {dates[key]}
               </span>
             </div>
-            {/* Dot: orange for today, gray for other training days */}
-            <div className={`w-1.5 h-1.5 rounded-full ${
-              hasTraining
-                ? isToday
-                  ? "bg-[#9bff30]"
-                  : "bg-[#7c7c7c]"
-                : "invisible"
-            }`} />
+            {showDot && (
+              <div
+                className="w-1.5 h-1.5 rounded-full"
+                style={{
+                  backgroundColor:
+                    isToday && trainedToday
+                      ? "#9BFF30"
+                      : isToday
+                      ? "#fb923c"
+                      : "#7c7c7c",
+                }}
+              />
+            )}
           </button>
         );
       })}
