@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { generateSchedule } from '../generateSchedule'
-import type { RoutineSetupAnswers, WeekSchedule, CompletedSession } from '@/types'
+import type { RoutineSetupAnswers, CompletedSession } from '@/types'
 
 // ─── generateSchedule ────────────────────────────────────────────────────────
 
