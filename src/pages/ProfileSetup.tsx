@@ -1,56 +1,58 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/store/useAuthStore'
-import { useProfileStore, type UserProfile } from '@/store/useProfileStore'
-import { ChevronLeft } from 'lucide-react'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useProfileStore, type UserProfile } from "@/store/useProfileStore";
+import { ChevronLeft } from "lucide-react";
 
-type Sex = 'male' | 'female' | 'other'
+type Sex = "male" | "female" | "other";
 
-const STEPS = 4
+const STEPS = 4;
 
 export const ProfileSetup = () => {
-  const navigate = useNavigate()
-  const user = useAuthStore(s => s.user)
-  const saveProfile = useProfileStore(s => s.saveProfile)
+  const navigate = useNavigate();
+  const user = useAuthStore((s) => s.user);
+  const saveProfile = useProfileStore((s) => s.saveProfile);
 
-  const [step, setStep] = useState(0)
-  const [saving, setSaving] = useState(false)
-  const [saveError, setSaveError] = useState<string | null>(null)
+  const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
-  const [sex, setSex] = useState<Sex | null>(null)
-  const [birthYear, setBirthYear] = useState('')
-  const [weight, setWeight] = useState('')
-  const [height, setHeight] = useState('')
+  const [sex, setSex] = useState<Sex | null>(null);
+  const [birthYear, setBirthYear] = useState("");
+  const [weight, setWeight] = useState("");
+  const [height, setHeight] = useState("");
 
   const canNext = [
     sex !== null,
-    birthYear.length === 4 && Number(birthYear) >= 1930 && Number(birthYear) <= 2010,
-    weight !== '' && Number(weight) >= 20 && Number(weight) <= 300,
-    height !== '' && Number(height) >= 100 && Number(height) <= 250,
-  ][step]
+    birthYear.length === 4 &&
+      Number(birthYear) >= 1930 &&
+      Number(birthYear) <= 2010,
+    weight !== "" && Number(weight) >= 20 && Number(weight) <= 300,
+    height !== "" && Number(height) >= 100 && Number(height) <= 250,
+  ][step];
 
   const handleNext = async () => {
     if (step < STEPS - 1) {
-      setStep(s => s + 1)
-      return
+      setStep((s) => s + 1);
+      return;
     }
-    if (!user) return
-    setSaving(true)
+    if (!user) return;
+    setSaving(true);
     const profile: UserProfile = {
       sex: sex!,
       birth_year: Number(birthYear),
       weight_kg: Number(weight),
       height_cm: Number(height),
-    }
+    };
     try {
-      await saveProfile(user.id, profile)
-      navigate('/', { replace: true })
+      await saveProfile(user.id, profile);
+      navigate("/", { replace: true });
     } catch {
-      setSaveError('No se pudo guardar tu perfil. Intentá de nuevo.')
+      setSaveError("No se pudo guardar tu perfil. Intentá de nuevo.");
     }
-  }
+  };
 
-  const progress = ((step + 1) / STEPS) * 100
+  const progress = ((step + 1) / STEPS) * 100;
 
   return (
     <div className="min-h-screen bg-black flex flex-col px-6 pt-14 pb-10">
@@ -65,7 +67,7 @@ export const ProfileSetup = () => {
       {/* Back button */}
       {step > 0 && (
         <button
-          onClick={() => setStep(s => s - 1)}
+          onClick={() => setStep((s) => s - 1)}
           className="flex items-center gap-1 text-[#8E8E93] mb-8 w-fit cursor-pointer font-body"
         >
           <ChevronLeft size={18} />
@@ -75,18 +77,12 @@ export const ProfileSetup = () => {
 
       {/* Step content */}
       <div className="flex-1 flex flex-col">
-        {step === 0 && (
-          <StepSex value={sex} onChange={setSex} />
-        )}
+        {step === 0 && <StepSex value={sex} onChange={setSex} />}
         {step === 1 && (
           <StepBirthYear value={birthYear} onChange={setBirthYear} />
         )}
-        {step === 2 && (
-          <StepWeight value={weight} onChange={setWeight} />
-        )}
-        {step === 3 && (
-          <StepHeight value={height} onChange={setHeight} />
-        )}
+        {step === 2 && <StepWeight value={weight} onChange={setWeight} />}
+        {step === 3 && <StepHeight value={height} onChange={setHeight} />}
       </div>
 
       {/* CTA */}
@@ -95,18 +91,24 @@ export const ProfileSetup = () => {
         disabled={!canNext || saving}
         className="w-full py-4 rounded-2xl font-bold text-base bg-[#9BFF30] text-black disabled:opacity-30 transition-opacity cursor-pointer disabled:cursor-default font-body"
       >
-        {saving ? 'Guardando...' : step === STEPS - 1 ? 'Empezar' : 'Continuar'}
+        {saving ? "Guardando..." : step === STEPS - 1 ? "Empezar" : "Continuar"}
       </button>
       {saveError && (
         <p className="text-red-400 text-sm text-center mt-3">{saveError}</p>
       )}
     </div>
-  )
-}
+  );
+};
 
 /* ── Steps ──────────────────────────────────────────────── */
 
-const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) => void }) => (
+const StepSex = ({
+  value,
+  onChange,
+}: {
+  value: Sex | null;
+  onChange: (v: Sex) => void;
+}) => (
   <div>
     <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Con qué sexo te identificás?
@@ -115,18 +117,20 @@ const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) =>
       Lo usamos para personalizar tu entrenamiento.
     </p>
     <div className="flex flex-col gap-3">
-      {([
-        { value: 'male', label: 'Masculino' },
-        { value: 'female', label: 'Femenino' },
-        { value: 'other', label: 'Prefiero no decirlo' },
-      ] as { value: Sex; label: string }[]).map(opt => (
+      {(
+        [
+          { value: "male", label: "Masculino" },
+          { value: "female", label: "Femenino" },
+          { value: "other", label: "Prefiero no decirlo" },
+        ] as { value: Sex; label: string }[]
+      ).map((opt) => (
         <button
           key={opt.value}
           onClick={() => onChange(opt.value)}
           className={`w-full py-4 px-5 rounded-2xl text-left font-medium text-base transition-all cursor-pointer font-body ${
             value === opt.value
-              ? 'bg-[#9BFF30] text-black'
-              : 'bg-[#1C1C1E] text-white'
+              ? "bg-[#9BFF30] text-black"
+              : "bg-[#1C1C1E] text-white"
           }`}
         >
           {opt.label}
@@ -134,9 +138,15 @@ const StepSex = ({ value, onChange }: { value: Sex | null; onChange: (v: Sex) =>
       ))}
     </div>
   </div>
-)
+);
 
-const StepBirthYear = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+const StepBirthYear = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
   <div>
     <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿En qué año naciste?
@@ -149,15 +159,21 @@ const StepBirthYear = ({ value, onChange }: { value: string; onChange: (v: strin
       inputMode="numeric"
       placeholder="1990"
       value={value}
-      onChange={e => onChange(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors font-display"
       min={1930}
       max={2010}
     />
   </div>
-)
+);
 
-const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+const StepWeight = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
   <div>
     <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Cuánto pesás?
@@ -171,7 +187,7 @@ const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) 
         inputMode="decimal"
         placeholder="75"
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16 font-display"
       />
       <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium font-body">
@@ -179,23 +195,27 @@ const StepWeight = ({ value, onChange }: { value: string; onChange: (v: string) 
       </span>
     </div>
   </div>
-)
+);
 
-const StepHeight = ({ value, onChange }: { value: string; onChange: (v: string) => void }) => (
+const StepHeight = ({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+}) => (
   <div>
     <h2 className="text-3xl font-black text-white mb-2 font-display">
       ¿Cuánto medís?
     </h2>
-    <p className="text-[#8E8E93] text-sm mb-10 font-body">
-      En centímetros.
-    </p>
+    <p className="text-[#8E8E93] text-sm mb-10 font-body">En centímetros.</p>
     <div className="relative">
       <input
         type="number"
         inputMode="decimal"
         placeholder="175"
         value={value}
-        onChange={e => onChange(e.target.value)}
+        onChange={(e) => onChange(e.target.value)}
         className="w-full bg-[#1C1C1E] text-white text-4xl font-black text-center py-6 rounded-2xl outline-none border border-transparent focus:border-[#9BFF30] transition-colors pr-16 font-display"
       />
       <span className="absolute right-5 top-1/2 -translate-y-1/2 text-[#8E8E93] text-lg font-medium font-body">
@@ -203,4 +223,4 @@ const StepHeight = ({ value, onChange }: { value: string; onChange: (v: string) 
       </span>
     </div>
   </div>
-)
+);

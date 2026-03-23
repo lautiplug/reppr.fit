@@ -3,16 +3,16 @@ import type { WeekDay, WeekSchedule } from "@/types";
 import { useNavigationHook } from "@/hooks/useNavigation";
 import { useNavigate } from "react-router-dom";
 import { useRef, useState, useCallback } from "react";
-import { useRoutineStore } from "@/store/useRoutineStore";
+import { useRoutineQuery, useSaveRoutineMutation } from "@/lib/queries";
 
 const WEEK_DAYS: { key: WeekDay; label: string }[] = [
-  { key: "lun", label: "Lunes" },
-  { key: "mar", label: "Martes" },
-  { key: "mie", label: "Miércoles" },
-  { key: "jue", label: "Jueves" },
-  { key: "vie", label: "Viernes" },
-  { key: "sab", label: "Sábado" },
-  { key: "dom", label: "Domingo" },
+  { key: "L", label: "Lunes" },
+  { key: "M", label: "Martes" },
+  { key: "X", label: "Miércoles" },
+  { key: "J", label: "Jueves" },
+  { key: "V", label: "Viernes" },
+  { key: "S", label: "Sábado" },
+  { key: "D", label: "Domingo" },
 ];
 
 const ROW_HEIGHT = 72; // aprox height of each row + gap
@@ -27,7 +27,17 @@ interface Props {
 export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
   const { goBack } = useNavigationHook(onBack);
   const navigate = useNavigate();
-  const { swapDays } = useRoutineStore();
+  const { data: routineData } = useRoutineQuery();
+  const saveRoutine = useSaveRoutineMutation();
+
+  const swapDays = (a: WeekDay, b: WeekDay) => {
+    const current = routineData?.schedule ?? {};
+    const newSchedule = { ...current, [a]: current[b], [b]: current[a] };
+    saveRoutine.mutate({
+      schedule: newSchedule,
+      lastAnswers: routineData?.lastAnswers ?? null,
+    });
+  };
 
   // Index being dragged
   const draggingIdx = useRef<number | null>(null);
@@ -41,13 +51,16 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
     overIdx: number;
   } | null>(null);
 
-  const getTargetIndex = useCallback((touchY: number, originIdx: number): number => {
-    if (!listRef.current) return originIdx;
-    const listRect = listRef.current.getBoundingClientRect();
-    const relY = touchY - listRect.top;
-    const idx = Math.round(relY / ROW_HEIGHT);
-    return Math.max(0, Math.min(WEEK_DAYS.length - 1, idx));
-  }, []);
+  const getTargetIndex = useCallback(
+    (touchY: number, originIdx: number): number => {
+      if (!listRef.current) return originIdx;
+      const listRect = listRef.current.getBoundingClientRect();
+      const relY = touchY - listRect.top;
+      const idx = Math.round(relY / ROW_HEIGHT);
+      return Math.max(0, Math.min(WEEK_DAYS.length - 1, idx));
+    },
+    [],
+  );
 
   const handleTouchStart = useCallback((e: React.TouchEvent, idx: number) => {
     startY.current = e.touches[0].clientY;
@@ -56,14 +69,17 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
     setDragState({ idx, offsetY: 0, overIdx: idx });
   }, []);
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (draggingIdx.current === null) return;
-    e.preventDefault();
-    currentY.current = e.touches[0].clientY;
-    const offsetY = currentY.current - startY.current;
-    const overIdx = getTargetIndex(currentY.current, draggingIdx.current);
-    setDragState({ idx: draggingIdx.current, offsetY, overIdx });
-  }, [getTargetIndex]);
+  const handleTouchMove = useCallback(
+    (e: React.TouchEvent) => {
+      if (draggingIdx.current === null) return;
+      e.preventDefault();
+      currentY.current = e.touches[0].clientY;
+      const offsetY = currentY.current - startY.current;
+      const overIdx = getTargetIndex(currentY.current, draggingIdx.current);
+      setDragState({ idx: draggingIdx.current, offsetY, overIdx });
+    },
+    [getTargetIndex],
+  );
 
   const handleTouchEnd = useCallback(() => {
     if (draggingIdx.current === null || !dragState) return;
@@ -100,7 +116,10 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
           Esta es tu semana
         </h2>
         {onReset && (
-          <button onClick={onReset} className="text-xs text-[#8E8E93] font-medium">
+          <button
+            onClick={onReset}
+            className="text-xs text-[#8E8E93] font-medium"
+          >
             Rehacer desde cero
           </button>
         )}
@@ -119,20 +138,30 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
           const isRest = !day || day.type === "rest";
 
           const isDragging = dragState?.idx === idx;
-          const isOver = dragState !== null && dragState.overIdx === idx && dragState.idx !== idx;
+          const isOver =
+            dragState !== null &&
+            dragState.overIdx === idx &&
+            dragState.idx !== idx;
 
           return (
             <div
               key={key}
-              style={isDragging ? { transform: `translateY(${dragState.offsetY}px)`, zIndex: 50 } : undefined}
+              style={
+                isDragging
+                  ? {
+                      transform: `translateY(${dragState.offsetY}px)`,
+                      zIndex: 50,
+                    }
+                  : undefined
+              }
               className={`flex items-center gap-2 rounded-2xl border-2 transition-shadow select-none ${
                 isDragging
                   ? "shadow-xl border-[#9BFF30] bg-[#2C2C2E] scale-[1.02] relative"
                   : isOver
-                  ? "border-[#9BFF30] bg-[#2C2C2E]"
-                  : isTraining
-                  ? "border-[#38383A] bg-[#2C2C2E]"
-                  : "border-dashed border-[#38383A] bg-[#1C1C1E]"
+                    ? "border-[#9BFF30] bg-[#2C2C2E]"
+                    : isTraining
+                      ? "border-[#38383A] bg-[#2C2C2E]"
+                      : "border-dashed border-[#38383A] bg-dark"
               }`}
             >
               {/* Drag handle — touch target */}
@@ -166,7 +195,8 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
                         {day.workoutName}
                       </p>
                       <p className="text-xs text-[#8E8E93] mt-0.5">
-                        {day.exercises.length} ejercicios · {day.muscleGroups.join(", ")}
+                        {day.exercises.length} ejercicios ·{" "}
+                        {day.muscleGroups.join(", ")}
                       </p>
                     </>
                   ) : (

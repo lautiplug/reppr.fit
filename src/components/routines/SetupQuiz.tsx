@@ -249,7 +249,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
               </p>
             </div>
 
-            <div className="bg-[#9BFF30]/10 border border-[#70b922] rounded-lg w-full px-4 py-3 flex flex-col justify-between">
+            <div className="bg-[#9BFF30]/10 border border-[#9BFF30] rounded-lg w-full px-4 py-3 flex flex-col justify-between">
               <div className="flex items-center gap-2 text-white">
                 <Clock className="text-[#9BFF30] w-5 h-5" />
                 <p className="text-[15px]">Sólo toma 1-2 minutos</p>

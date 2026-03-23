@@ -23,7 +23,7 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
   }, [allDone]);
 
   return (
-    <div className={`rounded-2xl overflow-hidden border transition-colors ${allDone ? "border-brand/40 bg-dark" : "border-[#38383A] bg-dark"}`}>
+    <div className={`rounded-2xl overflow-hidden border transition-colors ${allDone ? "border-[#9BFF30]/40 bg-dark" : "border-[#38383A] bg-dark"}`}>
 
       <button onClick={() => setExpanded(v => !v)} className="w-full text-left relative cursor-pointer">
         {ex.gif_url ? (
@@ -37,7 +37,7 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
               className={`w-full h-full transition-opacity duration-500 ${gifLoaded ? "opacity-100" : "opacity-0"}`}
             />
             <div className="absolute inset-0 bg-linear-to-t from-dark via-dark/30 to-transparent" />
-            <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${allDone ? "bg-brand text-black" : "bg-black/60 text-white"}`}>
+            <div className={`absolute top-3 right-3 px-2.5 py-1 rounded-full text-[11px] font-bold transition-colors ${allDone ? "bg-[#9BFF30] text-black" : "bg-black/60 text-white"}`}>
               {allDone ? "✓ Completo" : `${completedCount}/${ex.sets.length} series`}
             </div>
             <div className="absolute bottom-0 left-0 right-0 px-4 pb-3 flex items-end justify-between">
@@ -57,7 +57,7 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
                     : <Play className="w-3.5 h-3.5 text-black" />
                   }
                 </button>
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${expanded ? "bg-brand" : "bg-[#3A3A3C]"}`}>
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors ${expanded ? "bg-[#9BFF30]" : "bg-[#3A3A3C]"}`}>
                   {expanded ? <ChevronUp className="w-4 h-4 text-black" /> : <ChevronDown className="w-4 h-4 text-[#8E8E93]" />}
                 </div>
               </div>
@@ -65,7 +65,7 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
           </div>
         ) : (
           <div className="flex items-center gap-3 px-4 py-4">
-            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-colors ${allDone ? "bg-brand text-black" : "bg-[#3A3A3C] text-[#8E8E93]"}`} style={{ fontFamily: "Syne, sans-serif" }}>
+            <span className={`w-7 h-7 rounded-full flex items-center justify-center text-[11px] font-black shrink-0 transition-colors ${allDone ? "bg-[#9BFF30] text-black" : "bg-[#3A3A3C] text-[#8E8E93]"}`} style={{ fontFamily: "Syne, sans-serif" }}>
               {allDone ? <Check className="w-3.5 h-3.5" /> : exIndex + 1}
             </span>
             <div className="flex-1 min-w-0">
@@ -74,7 +74,7 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
               </p>
               <p className="text-[13px] text-[#8E8E93] mt-0.5 font-medium">{completedCount}/{ex.sets.length} series</p>
             </div>
-            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${expanded ? "bg-brand" : "bg-[#3A3A3C]"}`}>
+            <div className={`w-7 h-7 rounded-full flex items-center justify-center transition-colors ${expanded ? "bg-[#9BFF30]" : "bg-[#3A3A3C]"}`}>
               {expanded ? <ChevronUp className="w-3.5 h-3.5 text-black" /> : <ChevronDown className="w-3.5 h-3.5 text-[#8E8E93]" />}
             </div>
           </div>
@@ -103,20 +103,20 @@ export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex
                   value={s.reps === "fallo" ? "" : (s.reps || "")}
                   placeholder={s.reps === "fallo" ? "f" : "—"}
                   onChange={(e) => updateSet(exIndex, si, { reps: e.target.value === "" ? 0 : parseInt(e.target.value) })}
-                  className={`flex-1 min-w-0 h-11 rounded-xl text-center text-[14px] font-bold outline-none border transition-colors ${s.completed ? "bg-brand/15 border-brand/50 text-brand" : "bg-[#2C2C2E] border-transparent text-white focus:border-brand"}`}
+                  className={`flex-1 min-w-0 h-11 rounded-xl text-center text-[14px] font-bold outline-none border transition-colors ${s.completed ? "bg-[#9BFF30]/15 border-[#9BFF30]/50 text-[#9BFF30]" : "bg-[#2C2C2E] border-transparent text-white focus:border-[#9BFF30]"}`}
                 />
                 <input
                   type="number"
                   value={s.weight_kg ?? ""}
                   placeholder="—"
                   onChange={(e) => updateSet(exIndex, si, { weight_kg: e.target.value === "" ? undefined : parseFloat(e.target.value) })}
-                  className={`flex-1 min-w-0 h-11 rounded-xl text-center text-[14px] font-bold outline-none border transition-colors ${s.completed ? "bg-brand/15 border-brand/50 text-brand" : "bg-[#2C2C2E] border-transparent text-[#8E8E93] focus:border-brand"}`}
+                  className={`flex-1 min-w-0 h-11 rounded-xl text-center text-[14px] font-bold outline-none border transition-colors ${s.completed ? "bg-[#9BFF30]/15 border-[#9BFF30]/50 text-[#9BFF30]" : "bg-[#2C2C2E] border-transparent text-[#8E8E93] focus:border-[#9BFF30]"}`}
                 />
                 <button
                   onClick={() => canComplete && toggleSet(exIndex, si)}
                   className={`w-10 h-11 shrink-0 rounded-xl flex items-center justify-center transition-colors ${
-                    s.completed ? "bg-brand text-black"
-                    : canComplete ? "bg-[#3A3A3C] text-[#8E8E93] hover:bg-brand/20 hover:text-brand transition-colors"
+                    s.completed ? "bg-[#9BFF30] text-black"
+                    : canComplete ? "bg-[#3A3A3C] text-[#8E8E93] hover:bg-[#9BFF30]/20 hover:text-[#9BFF30] transition-colors"
                     : "bg-[#2C2C2E] text-[#3A3A3C] cursor-not-allowed"
                   }`}
                 >

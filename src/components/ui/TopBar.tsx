@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ArrowLeft, PenLine } from "lucide-react";
 import { useRoutineStore } from "@/store/useRoutineStore";
 import { useSessionStore } from "@/store/useSessionStore";
+import { useRoutineQuery } from "@/lib/queries";
 import { getTodayKey } from "@/components/excercises/utils";
 
 interface TopBarConfig {
@@ -13,7 +14,9 @@ interface TopBarConfig {
 const useTopBarConfig = (): TopBarConfig | null => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { schedule, selectedDay: storedDay } = useRoutineStore();
+  const { selectedDay: storedDay } = useRoutineStore();
+  const { data } = useRoutineQuery();
+  const schedule = data?.schedule ?? null;
 
   if (pathname.startsWith("/exercises")) {
     const day = storedDay ?? getTodayKey();

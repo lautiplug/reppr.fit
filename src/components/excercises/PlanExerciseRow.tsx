@@ -31,7 +31,7 @@ export function PlanExerciseRow({ ex, index }: { ex: DayExercise; index: number 
         {!ex.gif_url && (
           <>
             <span
-              className="w-7 h-7 rounded-full bg-brand/20 flex items-center justify-center text-[11px] font-black text-brand shrink-0"
+              className="w-7 h-7 rounded-full bg-[#9BFF30]/20 flex items-center justify-center text-[11px] font-black text-[#9BFF30] shrink-0"
               style={{ fontFamily: "Syne, sans-serif" }}
             >
               {index + 1}

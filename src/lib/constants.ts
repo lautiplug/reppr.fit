@@ -13,14 +13,14 @@ export const MUSCLE_LABELS: Record<MuscleGroup, string> = {
   forearms: 'Antebrazos',
 }
 
-export const WEEK_KEYS: WeekDay[] = ['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom']
+export const WEEK_KEYS: WeekDay[] = ['L', 'M', 'X', 'J', 'V', 'S', 'D']
 
 export const DAY_LABELS: Record<WeekDay, string> = {
-  lun: 'Lunes',
-  mar: 'Martes',
-  mie: 'Miércoles',
-  jue: 'Jueves',
-  vie: 'Viernes',
-  sab: 'Sábado',
-  dom: 'Domingo',
+  L: 'Lunes',
+  M: 'Martes',
+  X: 'Miércoles',
+  J: 'Jueves',
+  V: 'Viernes',
+  S: 'Sábado',
+  D: 'Domingo',
 }

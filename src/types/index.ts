@@ -127,7 +127,7 @@ export type WeekTemplate = {
   days: Partial<Record<WeekDay, string>> // e.g. { lun: 'P', mie: 'Tr', vie: 'Pi' }
 }
 
-export type WeekDay = 'lun' | 'mar' | 'mie' | 'jue' | 'vie' | 'sab' | 'dom'
+export type WeekDay = 'L' | 'M' | 'X' | 'J' | 'V' | 'S' | 'D'
 
 export interface ExerciseSet {
   reps: number | 'fallo'

@@ -176,7 +176,7 @@ const EQUIPMENT_FALLBACK: Partial<Record<MuscleGroup, MuscleGroup>> = {
 
 // ─── 4. HELPERS ──────────────────────────────────────────────────────────────
 
-const WEEK_ORDER: WeekDay[] = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"];
+const WEEK_ORDER: WeekDay[] = ["L", "M", "X", "J", "V", "S", "D"];
 
 function pickTrainingDays(count: number): WeekDay[] {
   const step = Math.floor(WEEK_ORDER.length / count);

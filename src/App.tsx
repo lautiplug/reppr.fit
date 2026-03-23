@@ -1,32 +1,38 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
-import { useEffect } from 'react'
-import { useAuthStore } from '@/store/useAuthStore'
-import { useProfileStore } from '@/store/useProfileStore'
-import { useRoutineStore } from '@/store/useRoutineStore'
-import { useSessionStore } from '@/store/useSessionStore'
-import { useQueryClient } from '@tanstack/react-query'
-import { queryKeys } from '@/lib/queries'
-import { supabase } from '@/lib/supabase'
-import { Auth } from '@/pages/Auth'
-import { Home } from '@/pages/Home'
-import { Routines } from '@/pages/Routines'
-import { Excercises } from '@/pages/Excercises'
-import { DayEditor } from '@/pages/DayEditor'
-import { ActiveSessions } from '@/pages/ActiveSessions'
-import { Profile } from '@/pages/Profile'
-import { ProfileSetup } from '@/pages/ProfileSetup'
-import SessionSummary from '@/pages/SessionSummary'
-import { NavigationBar } from '@/components/ui/NavigationBar'
-import { TopBar } from '@/components/ui/TopBar'
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  Outlet,
+  useLocation,
+} from "react-router-dom";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/useAuthStore";
+import { useProfileStore } from "@/store/useProfileStore";
+import { useRoutineStore } from "@/store/useRoutineStore";
+import { useSessionStore } from "@/store/useSessionStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/lib/supabase";
+import { Auth } from "@/pages/Auth";
+import { Home } from "@/pages/Home";
+import { Routines } from "@/pages/Routines";
+import { Excercises } from "@/pages/Excercises";
+import { DayEditor } from "@/pages/DayEditor";
+import { ActiveSessions } from "@/pages/ActiveSessions";
+import { Profile } from "@/pages/Profile";
+import { ProfileSetup } from "@/pages/ProfileSetup";
+import SessionSummary from "@/pages/SessionSummary";
+import { NavigationBar } from "@/components/ui/NavigationBar";
+import { TopBar } from "@/components/ui/TopBar";
 
 const AnimatedOutlet = () => {
-  const { pathname } = useLocation()
+  const { pathname } = useLocation();
   return (
     <div key={pathname} className="animate-[fadeIn_0.18s_ease-out]">
       <Outlet />
     </div>
-  )
-}
+  );
+};
 
 const AppLayout = () => (
   <>
@@ -34,15 +40,15 @@ const AppLayout = () => (
     <AnimatedOutlet />
     <NavigationBar />
   </>
-)
+);
 
 const SplashScreen = () => (
-  <div className="min-h-screen bg-[#1C1C1E] flex flex-col items-center justify-center gap-4">
+  <div className="min-h-screen bg-dark flex flex-col items-center justify-center gap-4">
     <p className="text-white font-black text-3xl animate-[fadeIn_0.4s_ease-out] font-display">
       reppr.fit
     </p>
     <div className="flex gap-1.5 animate-[fadeIn_0.4s_ease-out_0.2s_both]">
-      {[0, 1, 2].map(i => (
+      {[0, 1, 2].map((i) => (
         <div
           key={i}
           className="w-1.5 h-1.5 rounded-full bg-[#9BFF30]"
@@ -51,75 +57,80 @@ const SplashScreen = () => (
       ))}
     </div>
   </div>
-)
+);
 
 const RequireAuth = () => {
-  const user = useAuthStore(s => s.user)
-  const loading = useAuthStore(s => s.loading)
-  const hasProfile = useProfileStore(s => s.hasProfile)
-  const loadingProfile = useProfileStore(s => s.loadingProfile)
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+  const hasProfile = useProfileStore((s) => s.hasProfile);
+  const loadingProfile = useProfileStore((s) => s.loadingProfile);
 
   if (loading || loadingProfile) {
-    return <SplashScreen />
+    return <SplashScreen />;
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />
+    return <Navigate to="/auth" replace />;
   }
 
   if (!hasProfile) {
-    return <Navigate to="/setup" replace />
+    return <Navigate to="/setup" replace />;
   }
 
-  return <Outlet />
-}
+  return <Outlet />;
+};
 
 const RequireSetup = () => {
-  const user = useAuthStore(s => s.user)
-  const loading = useAuthStore(s => s.loading)
-  const hasProfile = useProfileStore(s => s.hasProfile)
-  const loadingProfile = useProfileStore(s => s.loadingProfile)
+  const user = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+  const hasProfile = useProfileStore((s) => s.hasProfile);
+  const loadingProfile = useProfileStore((s) => s.loadingProfile);
 
   if (loading || loadingProfile) {
-    return <SplashScreen />
+    return <SplashScreen />;
   }
 
   if (!user) {
-    return <Navigate to="/auth" replace />
+    return <Navigate to="/auth" replace />;
   }
 
   if (hasProfile) {
-    return <Navigate to="/" replace />
+    return <Navigate to="/" replace />;
   }
 
-  return <Outlet />
-}
+  return <Outlet />;
+};
 
 export const App = () => {
-  const init = useAuthStore(s => s.init)
-  const setUser = useAuthStore(s => s.setUser)
-  const queryClient = useQueryClient()
+  const init = useAuthStore((s) => s.init);
+  const setUser = useAuthStore((s) => s.setUser);
+  const queryClient = useQueryClient();
 
   useEffect(() => {
-    init()
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null)
+    init();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
 
-      if ((_event === 'SIGNED_IN' || _event === 'INITIAL_SESSION') && session?.user) {
-        useProfileStore.getState().loadFromSupabase(session.user.id)
-      } else if (_event === 'INITIAL_SESSION' && !session?.user) {
-        useProfileStore.setState({ loadingProfile: false })
+      if (
+        (_event === "SIGNED_IN" || _event === "INITIAL_SESSION") &&
+        session?.user
+      ) {
+        useProfileStore.getState().loadFromSupabase(session.user.id);
+      } else if (_event === "INITIAL_SESSION" && !session?.user) {
+        useProfileStore.setState({ loadingProfile: false });
       }
 
-      if (_event === 'SIGNED_OUT') {
-        useSessionStore.setState({ active: null })
-        useRoutineStore.getState().clearDraftAnswers()
-        useProfileStore.getState().clearProfile()
-        queryClient.clear()
+      if (_event === "SIGNED_OUT") {
+        useSessionStore.setState({ active: null });
+        useRoutineStore.getState().clearDraftAnswers();
+        useProfileStore.getState().clearProfile();
+        queryClient.clear();
       }
-    })
-    return () => subscription.unsubscribe()
-  }, [init, setUser, queryClient])
+    });
+    return () => subscription.unsubscribe();
+  }, [init, setUser, queryClient]);
 
   return (
     <BrowserRouter>
@@ -142,5 +153,5 @@ export const App = () => {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
-  )
-}
+  );
+};

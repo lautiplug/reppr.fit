@@ -19,7 +19,7 @@ export const Excercises = () => {
           {[0, 1, 2].map(i => (
             <div
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-brand"
+              className="w-1.5 h-1.5 rounded-full bg-[#9BFF30]"
               style={{ animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite` }}
             />
           ))}
@@ -45,7 +45,7 @@ export const Excercises = () => {
   const daySchedule = getDaySchedule(selectedDay);
 
   const getNextTrainingDay = (from: WeekDay) => {
-    const ORDER: WeekDay[] = ["lun", "mar", "mie", "jue", "vie", "sab", "dom"];
+    const ORDER: WeekDay[] = ["L", "M", "X", "J", "V", "S", "D"];
     const fromIdx = ORDER.indexOf(from);
     for (let i = 1; i <= 6; i++) {
       const candidate = ORDER[(fromIdx + i) % 7];

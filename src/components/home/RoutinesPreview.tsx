@@ -48,7 +48,15 @@ export const RoutinesPreview = ({
                   className="w-7 h-1.5 rounded-full"
                   style={{ background: r.active ? "#9BFF30" : "#E8E8E3" }}
                 />
-                <p className={r.active ? "text-[#9BFF30] text-xs font-bold" : "text-[#6B6B6B] text-xs"}>{r.active ? "Hoy" : ''}</p>
+                <p
+                  className={
+                    r.active
+                      ? "text-[#9BFF30] text-xs font-bold"
+                      : "text-[#6B6B6B] text-xs"
+                  }
+                >
+                  {r.active ? "Hoy" : ""}
+                </p>
               </div>
               <p className="text-[11px] text-[#9d9d9d] font-medium uppercase tracking-wider">
                 {r.day}
