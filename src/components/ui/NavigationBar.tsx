@@ -20,14 +20,14 @@ export const NavigationBar = () => {
       icon: Dumbbell,
       linkTo: hasRoutine ? "/exercises" : "/routines",
     },
-    { name: "Progreso", icon: ChartNoAxesColumn, linkTo: "/session" },
+    { name: "Progreso", icon: ChartNoAxesColumn, linkTo: "/progress" },
     { name: "Perfil", icon: UserIcon, linkTo: "/profile" },
     { name: "Coach", icon: Bot, linkTo: "/chat" },
   ];
 
   return (
     <nav
-      className="fixed bottom-0 h-20 left-0 right-0 flex z-30 bg-black"
+      className="fixed bottom-2 h-20 left-2 right-2 flex z-30 bg-black/20 rounded-full shadow-[0_4px_30px_rgba(0,0,0,0.1)] backdrop-blur-[17px]"
       style={{ paddingBottom: "env(safe-area-inset-bottom, 0px)" }}
     >
       {navigationItems.map(({ name, icon: Icon, linkTo }) => {
@@ -45,10 +45,10 @@ export const NavigationBar = () => {
             <Icon
               size={28}
               strokeWidth={1.5}
-              className={`transition-colors duration-200 ${active ? "text-white" : "text-[#8E8E93]"}`}
+              className={`transition-colors duration-200 ${active ? "text-white" : "text-[#babac1]"}`}
             />
             <span
-              className={`text-[12px] font-medium transition-colors duration-200 ${active ? "text-[#9BFF30]" : "text-[#8E8E93]"}`}
+              className={`text-[12px] font-medium transition-colors duration-200 ${active ? "text-[#9BFF30]" : "text-[#babac1]"}`}
             >
               {name}
             </span>

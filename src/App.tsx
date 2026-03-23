@@ -22,6 +22,7 @@ import { ActiveSessions } from "@/pages/ActiveSessions";
 import { Profile } from "@/pages/Profile";
 import { ProfileSetup } from "@/pages/ProfileSetup";
 import SessionSummary from "@/pages/SessionSummary";
+import { Progress } from "@/pages/Progress";
 import { NavigationBar } from "@/components/ui/NavigationBar";
 import { TopBar } from "@/components/ui/TopBar";
 
@@ -147,6 +148,7 @@ export const App = () => {
             <Route path="/routines/edit/:day" element={<DayEditor />} />
             <Route path="/exercises" element={<Excercises />} />
             <Route path="/session" element={<ActiveSessions />} />
+            <Route path="/progress" element={<Progress />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>

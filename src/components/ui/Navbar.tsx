@@ -26,8 +26,8 @@ export const Navbar = () => {
           </div>
         )}
         <div>
-          <h1 className="text-md font-medium text-white font-body">{name}</h1>
-          <p className="text-white text-xs">24 años</p>
+          <h1 className="text-md font-medium text-white font-body">{name } <span className="text-lg">{ user?.user_metadata?.gender === "male" ? "🏋️‍♂️" : "🏋️‍♀️"}</span> </h1>
+          <p className="text-[#d2d2d2] text-xs">Estás haciendo un esfuerzo enorme!</p>
         </div>
       </div>
       <div className="relative flex items-center gap-6 p-3.5 bg-[#000000] rounded-full">
