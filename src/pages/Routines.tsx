@@ -3,17 +3,32 @@ import { useState } from "react";
 import type { RoutineSetupAnswers } from "@/types";
 import { SetupQuiz } from "@/components/routines/SetupQuiz";
 import { WeekEditor } from "@/components/routines/WeekEditor";
-import { useRoutineQuery, useGenerateRoutineMutation, useClearRoutineMutation } from "@/lib/queries";
+import { useRoutineQuery, useGenerateRoutineMutation, useClearRoutineMutation, useSaveRoutineMutation } from "@/lib/queries";
+
+const formatLastSync = (timestamp: number) => {
+  if (!timestamp) return "Sin sincronizar";
+  return new Intl.DateTimeFormat("es-AR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).format(new Date(timestamp));
+};
 
 export const Routines = () => {
   const navigate = useNavigate();
-  const { data, isLoading } = useRoutineQuery();
+  const { data, isLoading, dataUpdatedAt, isFetching, refetch } = useRoutineQuery();
   const generateRoutine = useGenerateRoutineMutation();
   const clearRoutine = useClearRoutineMutation();
+  const saveRoutine = useSaveRoutineMutation();
   const [cameFromQuiz, setCameFromQuiz] = useState(false);
 
   const handleQuizComplete = (answers: RoutineSetupAnswers) => {
     generateRoutine.mutate(answers);
+    setCameFromQuiz(true);
+  };
+
+  const handleSkip = () => {
+    saveRoutine.mutate({ schedule: {}, lastAnswers: null });
     setCameFromQuiz(true);
   };
 
@@ -36,17 +51,41 @@ export const Routines = () => {
   }
 
   if (!data?.schedule) {
-    return <SetupQuiz onComplete={handleQuizComplete} initialAnswers={data?.lastAnswers ?? undefined} />;
+    return (
+      <section className="min-h-screen bg-black px-5 pt-4">
+        <div className="mb-4">
+          <button
+            onClick={() => refetch()}
+            className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/80"
+            disabled={isFetching}
+          >
+            {isFetching ? "Sincronizando..." : `Sync ${formatLastSync(dataUpdatedAt)}`}
+          </button>
+        </div>
+        <SetupQuiz onComplete={handleQuizComplete} onSkip={handleSkip} initialAnswers={data?.lastAnswers ?? undefined} />
+      </section>
+    );
   }
 
   const handleBack = cameFromQuiz ? () => clearRoutine.mutate() : () => navigate(-1);
   const handleReset = () => clearRoutine.mutate();
   return (
-    <WeekEditor
-      schedule={data.schedule}
-      onConfirm={handleConfirm}
-      onBack={handleBack}
-      onReset={handleReset}
-    />
+    <section className="min-h-screen bg-black">
+      <div className="px-5 pt-4 mb-2">
+        <button
+          onClick={() => refetch()}
+          className="rounded-full border border-white/15 px-3 py-1.5 text-xs text-white/80"
+          disabled={isFetching}
+        >
+          {isFetching ? "Sincronizando..." : `Sync ${formatLastSync(dataUpdatedAt)}`}
+        </button>
+      </div>
+      <WeekEditor
+        schedule={data.schedule}
+        onConfirm={handleConfirm}
+        onBack={handleBack}
+        onReset={handleReset}
+      />
+    </section>
   );
 };
