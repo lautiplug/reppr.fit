@@ -14,7 +14,7 @@ describe('generateSchedule', () => {
     const schedule = generateSchedule(base)
     const days = Object.keys(schedule)
     expect(days).toHaveLength(7)
-    expect(days).toEqual(expect.arrayContaining(['lun', 'mar', 'mie', 'jue', 'vie', 'sab', 'dom']))
+    expect(days).toEqual(expect.arrayContaining(['L', 'M', 'X', 'J', 'V', 'S', 'D']))
   })
 
   it('el número de días de entrenamiento coincide con daysPerWeek', () => {
