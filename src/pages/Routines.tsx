@@ -3,17 +3,23 @@ import { useState } from "react";
 import type { RoutineSetupAnswers } from "@/types";
 import { SetupQuiz } from "@/components/routines/SetupQuiz";
 import { WeekEditor } from "@/components/routines/WeekEditor";
-import { useRoutineQuery, useGenerateRoutineMutation, useClearRoutineMutation } from "@/lib/queries";
+import { useRoutineQuery, useGenerateRoutineMutation, useClearRoutineMutation, useSaveRoutineMutation } from "@/lib/queries";
 
 export const Routines = () => {
   const navigate = useNavigate();
   const { data, isLoading } = useRoutineQuery();
   const generateRoutine = useGenerateRoutineMutation();
   const clearRoutine = useClearRoutineMutation();
+  const saveRoutine = useSaveRoutineMutation();
   const [cameFromQuiz, setCameFromQuiz] = useState(false);
 
   const handleQuizComplete = (answers: RoutineSetupAnswers) => {
     generateRoutine.mutate(answers);
+    setCameFromQuiz(true);
+  };
+
+  const handleSkip = () => {
+    saveRoutine.mutate({ schedule: {}, lastAnswers: null });
     setCameFromQuiz(true);
   };
 
@@ -36,7 +42,7 @@ export const Routines = () => {
   }
 
   if (!data?.schedule) {
-    return <SetupQuiz onComplete={handleQuizComplete} initialAnswers={data?.lastAnswers ?? undefined} />;
+    return <SetupQuiz onComplete={handleQuizComplete} onSkip={handleSkip} initialAnswers={data?.lastAnswers ?? undefined} />;
   }
 
   const handleBack = cameFromQuiz ? () => clearRoutine.mutate() : () => navigate(-1);

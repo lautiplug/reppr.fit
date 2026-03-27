@@ -177,6 +177,7 @@ function ContinueButton({
 
 interface Props {
   onComplete: (answers: RoutineSetupAnswers) => void;
+  onSkip: () => void;
   initialAnswers?: RoutineSetupAnswers;
 }
 
@@ -189,7 +190,7 @@ function inferStep(draft: Partial<RoutineSetupAnswers> | null): number {
   return 3;
 }
 
-export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
+export const SetupQuiz = ({ onComplete, onSkip, initialAnswers }: Props) => {
   const navigate = useNavigate();
   const { draftAnswers, setDraftAnswers, clearDraftAnswers } = useRoutineStore();
 
@@ -223,7 +224,7 @@ export const SetupQuiz = ({ onComplete, initialAnswers }: Props) => {
             >
               <ArrowLeft className="w-5 h-5" />
             </button>
-            <p className="text-[#ececec]">Saltar</p>
+            <p className="text-[#ececec] cursor-pointer" onClick={onSkip}>Saltar</p>
           </div>
 
           <div className="flex-1 flex flex-col justify-center items-center text-center gap-4">
