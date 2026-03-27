@@ -7,6 +7,46 @@ import { useSessionStore } from '@/store/useSessionStore'
 import type { WeekSchedule, RoutineSetupAnswers, CompletedSession, DayExercise } from '@/types'
 import { generateSchedule } from '@/components/routines/generateSchedule'
 
+const LEGACY_TO_CURRENT_DAY_KEY: Record<string, keyof WeekSchedule> = {
+  lun: 'L',
+  mar: 'M',
+  mie: 'X',
+  mié: 'X',
+  jue: 'J',
+  vie: 'V',
+  sab: 'S',
+  sáb: 'S',
+  dom: 'D',
+  l: 'L',
+  m: 'M',
+  x: 'X',
+  j: 'J',
+  v: 'V',
+  s: 'S',
+  d: 'D',
+}
+
+function normalizeWeekSchedule(input: unknown): WeekSchedule | null {
+  if (!input || typeof input !== 'object') return null
+
+  const raw = input as Record<string, unknown>
+  const normalized: WeekSchedule = {}
+
+  for (const [key, value] of Object.entries(raw)) {
+    const trimmed = key.trim()
+    const upper = trimmed.toUpperCase()
+    const legacy = trimmed.toLowerCase()
+    const normalizedKey =
+      (['L', 'M', 'X', 'J', 'V', 'S', 'D'].includes(upper) ? upper : LEGACY_TO_CURRENT_DAY_KEY[legacy]) as keyof WeekSchedule | undefined
+
+    if (normalizedKey) {
+      normalized[normalizedKey] = value as WeekSchedule[keyof WeekSchedule]
+    }
+  }
+
+  return Object.keys(normalized).length > 0 ? normalized : null
+}
+
 // --- Query keys ---
 
 export const queryKeys = {
@@ -58,7 +98,7 @@ export function useRoutineQuery() {
       return data ?? null
     },
     select: (data) => ({
-      schedule: (data?.schedule as WeekSchedule) ?? null,
+      schedule: normalizeWeekSchedule(data?.schedule),
       lastAnswers: (data?.last_answers as RoutineSetupAnswers) ?? null,
     }),
   })
