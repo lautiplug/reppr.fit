@@ -41,7 +41,7 @@ export const Routines = () => {
           {[0, 1, 2].map(i => (
             <div
               key={i}
-              className="w-1.5 h-1.5 rounded-full bg-[#9BFF30]"
+              className="w-1.5 h-1.5 rounded-full bg-[rgb(155,255,48)]"
               style={{ animation: `pulse 1.2s ease-in-out ${i * 0.2}s infinite` }}
             />
           ))}
