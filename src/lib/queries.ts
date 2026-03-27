@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -18,6 +19,31 @@ export const queryKeys = {
 
 export function useRoutineQuery() {
   const userId = useAuthStore(s => s.user?.id)
+  const queryClient = useQueryClient()
+
+  useEffect(() => {
+    if (!userId) return
+
+    const channel = supabase
+      .channel(`user_routines_sync_${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'user_routines',
+          filter: `user_id=eq.${userId}`,
+        },
+        () => {
+          queryClient.invalidateQueries({ queryKey: queryKeys.routine(userId) })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(channel)
+    }
+  }, [userId, queryClient])
 
   return useQuery({
     queryKey: queryKeys.routine(userId ?? ''),
