@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { useSessionHistoryQuery, useRoutineQuery } from "@/lib/queries";
-import type { CompletedSession, WeekDay, DayExercise } from "@/types";
+import type { CompletedSession, WeekDay, DayExercise, DaySchedule } from "@/types";
 import {
   LineChart,
   Line,
@@ -198,6 +198,7 @@ const DAY_LABELS: Record<WeekDay, string> = {
   L: "LUN", M: "MAR", X: "MIÉ", J: "JUE", V: "VIE", S: "SÁB", D: "DOM",
 };
 const DAY_ORDER: WeekDay[] = ["L", "M", "X", "J", "V", "S", "D"];
+type TrainingDaySchedule = Extract<DaySchedule, { type: "training" }>;
 
 // --- Page ---
 
@@ -216,10 +217,9 @@ export const Progress = () => {
 
   const activeDay = selectedDay ?? trainingDays[0] ?? null;
 
-  const daySchedule =
-    activeDay && routine?.schedule?.[activeDay]?.type === "training"
-      ? (routine.schedule[activeDay] as Extract<typeof routine.schedule[WeekDay], { type: "training" }>)
-      : null;
+  const maybeDaySchedule = activeDay ? routine?.schedule?.[activeDay] : null;
+  const daySchedule: TrainingDaySchedule | null =
+    maybeDaySchedule?.type === "training" ? maybeDaySchedule : null;
 
   const isLoading = historyLoading || routineLoading;
 
