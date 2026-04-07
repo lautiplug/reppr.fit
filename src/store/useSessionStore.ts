@@ -12,6 +12,8 @@ export interface ActiveSet {
   reps: number | 'fallo'
   weight_kg?: number
   completed: boolean
+  rir?: number        // 0 | 1 | 2 | 3 — Reps In Reserve (opcional)
+  restSeconds?: number
 }
 
 export interface ActiveExercise {
@@ -20,22 +22,38 @@ export interface ActiveExercise {
   gif_url?: string
   sets: ActiveSet[]
   skipped?: boolean
+  swappedFrom?: string // nombre original si fue swap mid-sesión
 }
 
 interface ActiveSession {
   workoutName: string
   startedAt: string
   exercises: ActiveExercise[]
+  // Timer de descanso activo: qué set está descansando y cuándo empezó
+  restTimer?: {
+    exerciseIndex: number
+    setIndex: number
+    startedAt: string  // ISO timestamp
+    totalSeconds: number
+  }
 }
 
 interface SessionState {
   active: ActiveSession | null
+  currentExerciseIndex: number
+
   startSession: (workoutName: string, exercises: DayExercise[]) => Promise<void>
   toggleSet: (exerciseIndex: number, setIndex: number) => void
-  updateSet: (exerciseIndex: number, setIndex: number, data: Partial<Pick<ActiveSet, 'reps' | 'weight_kg'>>) => void
+  updateSet: (exerciseIndex: number, setIndex: number, data: Partial<Pick<ActiveSet, 'reps' | 'weight_kg' | 'rir' | 'restSeconds'>>) => void
   skipExercise: (exerciseIndex: number) => void
   removeSet: (exerciseIndex: number) => void
   addSet: (exerciseIndex: number) => void
+  swapExercise: (exerciseIndex: number, replacement: Pick<ActiveExercise, 'name' | 'name_es' | 'gif_url'>) => void
+  goToExercise: (index: number) => void
+  nextExercise: () => void
+  prevExercise: () => void
+  startRestTimer: (exerciseIndex: number, setIndex: number, totalSeconds: number) => void
+  clearRestTimer: () => void
   finishSession: () => CompletedSession | null
   abandonSession: () => void
 }
@@ -44,6 +62,40 @@ export const useSessionStore = create<SessionState>()(
   persist(
     (set, get) => ({
       active: null,
+      currentExerciseIndex: 0,
+
+      goToExercise: (index) => set(state => {
+        if (!state.active) return state
+        const clamped = Math.max(0, Math.min(index, state.active.exercises.length - 1))
+        return { currentExerciseIndex: clamped }
+      }),
+
+      nextExercise: () => set(state => {
+        if (!state.active) return state
+        const next = Math.min(state.currentExerciseIndex + 1, state.active.exercises.length - 1)
+        return { currentExerciseIndex: next }
+      }),
+
+      prevExercise: () => set(state => {
+        if (!state.active) return state
+        const prev = Math.max(state.currentExerciseIndex - 1, 0)
+        return { currentExerciseIndex: prev }
+      }),
+
+      swapExercise: (exerciseIndex, replacement) => set(state => {
+        if (!state.active) return state
+        const exercises = state.active.exercises.map((ex, ei) => {
+          if (ei !== exerciseIndex) return ex
+          return {
+            ...ex,
+            swappedFrom: ex.swappedFrom ?? ex.name,
+            name: replacement.name,
+            name_es: replacement.name_es,
+            gif_url: replacement.gif_url,
+          }
+        })
+        return { active: { ...state.active, exercises } }
+      }),
 
       startSession: async (workoutName, exercises) => {
         const missing = exercises.filter(ex => !ex.gif_url).map(ex => ex.name)
@@ -60,6 +112,7 @@ export const useSessionStore = create<SessionState>()(
           }
         }
         set({
+          currentExerciseIndex: 0,
           active: {
             workoutName,
             startedAt: new Date().toISOString(),
@@ -123,13 +176,19 @@ export const useSessionStore = create<SessionState>()(
               name: ex.name,
               name_es: ex.name_es,
               skipped: isSkipped,
+              swappedFrom: ex.swappedFrom,
               sets: isSkipped ? [] : ex.sets
                 .filter(s => s.completed)
-                .map(s => ({ reps: s.reps, weight_kg: s.weight_kg } as CompletedSet)),
+                .map(s => ({
+                  reps: s.reps,
+                  weight_kg: s.weight_kg,
+                  rir: s.rir,
+                  restSeconds: s.restSeconds,
+                } as CompletedSet)),
             }
           }),
         }
-        set({ active: null })
+        set({ active: null, currentExerciseIndex: 0 })
 
         const userId = useAuthStore.getState().user?.id
         if (userId) {
@@ -177,8 +236,23 @@ export const useSessionStore = create<SessionState>()(
         return { active: { ...state.active, exercises } }
       }),
 
-      abandonSession: () => set({ active: null }),
+      startRestTimer: (exerciseIndex, setIndex, totalSeconds) => set(state => {
+        if (!state.active) return state
+        return {
+          active: {
+            ...state.active,
+            restTimer: { exerciseIndex, setIndex, startedAt: new Date().toISOString(), totalSeconds },
+          },
+        }
+      }),
+
+      clearRestTimer: () => set(state => {
+        if (!state.active) return state
+        return { active: { ...state.active, restTimer: undefined } }
+      }),
+
+      abandonSession: () => set({ active: null, currentExerciseIndex: 0 }),
     }),
-    { name: 'session-store', partialize: (state) => ({ active: state.active }) }
+    { name: 'session-store', partialize: (state) => ({ active: state.active, currentExerciseIndex: state.currentExerciseIndex }) }
   )
 )

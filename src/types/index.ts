@@ -76,12 +76,15 @@ export interface Session {
 export interface CompletedSet {
   reps: number | 'fallo'
   weight_kg?: number
+  rir?: number        // 0 | 1 | 2 | 3 — Reps In Reserve (opcional)
+  restSeconds?: number // tiempo de descanso tomado post-set
 }
 
 export interface CompletedExercise {
   name: string
   name_es?: string
   skipped?: boolean
+  swappedFrom?: string // nombre original si fue swap mid-sesión
   sets: CompletedSet[]
 }
 

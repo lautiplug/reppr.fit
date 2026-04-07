@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { CheckCircle, FileSpreadsheet, Redo2 } from "lucide-react";
 import type { DayExercise, WeekDay } from "@/types";
 import { useSessionStore } from "@/store/useSessionStore";
@@ -7,7 +7,8 @@ import { useSessionHistoryQuery } from "@/lib/queries";
 import { useActiveSession } from "./hooks/useActiveSession";
 import { getFlipImageUrl } from "./utils";
 import { PlanExerciseRow } from "./PlanExerciseRow";
-import { ActiveExerciseRow } from "./ActiveExerciseRow";
+import { ExerciseStory } from "./ExerciseStory";
+import { SwapSheet } from "./SwapSheet";
 import { SummaryModal, AbandonModal } from "./SessionModals";
 import { Card } from "@/components/ui/card";
 import { ShineBorder } from "../ui/shine-border";
@@ -41,7 +42,8 @@ export const TrainingDay = ({
   exercises,
 }: Props) => {
   const navigate = useNavigate();
-  const { startSession } = useSessionStore();
+  const [swapOpen, setSwapOpen] = useState(false);
+  const { startSession, currentExerciseIndex, goToExercise, nextExercise, prevExercise, swapExercise } = useSessionStore();
   const { data: history = [] } = useSessionHistoryQuery();
   const {
     active,
@@ -137,27 +139,19 @@ export const TrainingDay = ({
           </Card>
         ) : null}
 
-        <div className="flex flex-col gap-2">
-          {active
-            ? active.exercises.map((ex, i) => (
-                <div
-                  key={i}
-                  className="animate-[fadeIn_0.3s_ease-out_both]"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <ActiveExerciseRow ex={ex} exIndex={i} />
-                </div>
-              ))
-            : exercises.map((ex, i) => (
-                <div
-                  key={ex.order}
-                  className="animate-[fadeIn_0.3s_ease-out_both]"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <PlanExerciseRow ex={ex} index={i} />
-                </div>
-              ))}
-        </div>
+        {!active && (
+          <div className="flex flex-col gap-2">
+            {exercises.map((ex, i) => (
+              <div
+                key={ex.order}
+                className="animate-[fadeIn_0.3s_ease-out_both]"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <PlanExerciseRow ex={ex} index={i} />
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {!active && (
@@ -199,6 +193,62 @@ export const TrainingDay = ({
         <AbandonModal
           onConfirm={handleAbandon}
           onCancel={() => setShowAbandon(false)}
+        />
+      )}
+
+      {/* Story viewer — overlay completo cuando la sesión está activa */}
+      {active && (
+        <div className="fixed inset-0 z-30 bg-black flex flex-col" style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+          {/* Top bar: workout name + controles */}
+          <div className="flex justify-between items-center px-4 pt-2 pb-1 shrink-0">
+            <div>
+              <p className="font-black text-white text-base leading-tight" style={{ fontFamily: 'Syne, sans-serif' }}>
+                {workoutName}
+              </p>
+              <p className="text-[11px] font-semibold text-white/40">
+                {elapsed} · {completedSets}/{totalSets} series
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowAbandon(true)}
+                className="text-[12px] font-semibold border border-white/30 text-white/60 px-2.5 py-1 rounded-xl cursor-pointer"
+              >
+                Abandonar
+              </button>
+              <button
+                onClick={handleFinish}
+                className="text-[13px] font-semibold bg-brand text-black px-2.5 py-1 rounded-xl cursor-pointer"
+              >
+                Finalizar
+              </button>
+            </div>
+          </div>
+
+          {/* Story del ejercicio actual */}
+          <div className="flex-1 overflow-hidden">
+            <ExerciseStory
+              ex={active.exercises[currentExerciseIndex]}
+              exIndex={currentExerciseIndex}
+              total={active.exercises.length}
+              onPrev={prevExercise}
+              onNext={nextExercise}
+              onSwap={() => setSwapOpen(true)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* SwapSheet */}
+      {swapOpen && active && (
+        <SwapSheet
+          muscleGroup={exercises[currentExerciseIndex]?.muscle_group}
+          currentName={active.exercises[currentExerciseIndex].name}
+          onSelect={(replacement) => {
+            swapExercise(currentExerciseIndex, replacement)
+            setSwapOpen(false)
+          }}
+          onClose={() => setSwapOpen(false)}
         />
       )}
     </div>
