@@ -187,6 +187,37 @@ export function useSessionHistoryQuery() {
   })
 }
 
+const HISTORY_PAGE_SIZE = 20
+
+export function useSessionHistoryPagedQuery(page: number) {
+  const userId = useAuthStore(s => s.user?.id)
+  const from = page * HISTORY_PAGE_SIZE
+  const to = from + HISTORY_PAGE_SIZE - 1
+
+  return useQuery({
+    queryKey: [...queryKeys.sessionHistory(userId ?? ''), 'paged', page],
+    enabled: !!userId,
+    queryFn: async () => {
+      const { data, error, count } = await supabase
+        .from('session_history')
+        .select('*', { count: 'exact' })
+        .eq('user_id', userId!)
+        .order('date', { ascending: false })
+        .range(from, to)
+      if (error) throw new Error(error.message)
+      const items = (data ?? []).map(row => ({
+        id: row.id,
+        workoutName: row.workout_name,
+        date: row.date,
+        durationMin: row.duration_min,
+        exercises: row.exercises,
+      })) as CompletedSession[]
+      return { items, total: count ?? 0 }
+    },
+    placeholderData: (prev) => prev,
+  })
+}
+
 export function useFinishSessionMutation() {
   const userId = useAuthStore(s => s.user?.id)
   const queryClient = useQueryClient()
