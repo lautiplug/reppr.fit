@@ -4,7 +4,7 @@ import {
   Dumbbell,
   House,
   UserIcon,
-  Bot,
+  History,
 } from "lucide-react";
 import { useRoutineQuery } from "@/lib/queries";
 
@@ -21,8 +21,8 @@ export const NavigationBar = () => {
       linkTo: hasRoutine ? "/exercises" : "/routines",
     },
     { name: "Progreso", icon: ChartNoAxesColumn, linkTo: "/progress" },
+    { name: "Historial", icon: History, linkTo: "/history" },
     { name: "Perfil", icon: UserIcon, linkTo: "/profile" },
-    { name: "Coach", icon: Bot, linkTo: "/chat" },
   ];
 
   return (
@@ -48,7 +48,7 @@ export const NavigationBar = () => {
               className={`transition-colors duration-200 ${active ? "text-white" : "text-[#babac1]"}`}
             />
             <span
-              className={`text-[12px] font-medium transition-colors duration-200 ${active ? "text-[#9BFF30]" : "text-[#babac1]"}`}
+              className={`text-[12px] font-medium transition-colors duration-200 ${active ? "text-brand" : "text-[#babac1]"}`}
             >
               {name}
             </span>

@@ -23,6 +23,7 @@ import { Profile } from "@/pages/Profile";
 import { ProfileSetup } from "@/pages/ProfileSetup";
 import SessionSummary from "@/pages/SessionSummary";
 import { Progress } from "@/pages/Progress";
+import { History } from "@/pages/History";
 import { NavigationBar } from "@/components/ui/NavigationBar";
 import { TopBar } from "@/components/ui/TopBar";
 
@@ -149,6 +150,7 @@ export const App = () => {
             <Route path="/exercises" element={<Excercises />} />
             <Route path="/session" element={<ActiveSessions />} />
             <Route path="/progress" element={<Progress />} />
+            <Route path="/history" element={<History />} />
             <Route path="/profile" element={<Profile />} />
           </Route>
         </Route>
