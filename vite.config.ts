@@ -4,6 +4,19 @@ import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
 
+const supabaseUrl = process.env.VITE_SUPABASE_URL ?? ''
+let supabaseOrigin: string | null = null
+let supabaseHost: string | null = null
+
+try {
+  // Used to loosen CSP during local development when Supabase runs locally over HTTP.
+  const u = new URL(supabaseUrl)
+  supabaseOrigin = u.origin
+  supabaseHost = u.host
+} catch {
+  // Ignore: missing/invalid env during CI/test.
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
@@ -40,7 +53,23 @@ export default defineConfig({
         "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
         "font-src 'self' https://fonts.gstatic.com",
         "img-src 'self' data: blob: https:",          // https: allows any HTTPS image (gif CDNs)
-        "connect-src 'self' https://*.supabase.co wss://*.supabase.co https://exercisedb.p.rapidapi.com",
+        [
+          "connect-src 'self'",
+          "https://*.supabase.co",
+          "wss://*.supabase.co",
+          'https://exercisedb.p.rapidapi.com',
+          // Allow local Supabase for dev (e.g. http://127.0.0.1:54321) and its WS endpoint.
+          ...(supabaseOrigin ? [supabaseOrigin] : []),
+          ...(supabaseHost ? [`ws://${supabaseHost}`, `wss://${supabaseHost}`] : []),
+          // Extra coverage for dev environments that use `localhost` vs `127.0.0.1`
+          // or may vary the port.
+          'http://127.0.0.1:*',
+          'http://localhost:*',
+          'ws://127.0.0.1:*',
+          'ws://localhost:*',
+          'wss://127.0.0.1:*',
+          'wss://localhost:*',
+        ].join(' '),
         "frame-ancestors 'none'",                     // anti-clickjacking
       ].join('; '),
       'X-Frame-Options': 'DENY',

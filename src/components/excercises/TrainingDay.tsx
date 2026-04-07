@@ -43,7 +43,7 @@ export const TrainingDay = ({
 }: Props) => {
   const navigate = useNavigate();
   const [swapOpen, setSwapOpen] = useState(false);
-  const { startSession, currentExerciseIndex, goToExercise, nextExercise, prevExercise, swapExercise } = useSessionStore();
+  const { startSession, currentExerciseIndex, nextExercise, prevExercise, swapExercise } = useSessionStore();
   const { data: history = [] } = useSessionHistoryQuery();
   const {
     active,
