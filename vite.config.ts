@@ -43,9 +43,9 @@ export default defineConfig({
         theme_color: '#F7F7F5',
         icons: [
           {
-            src: '/vite.svg',
-            sizes: 'any',
-            type: 'image/svg+xml',
+            src: '/repprlogo.png',
+            sizes: '1254x1254',
+            type: 'image/png',
             purpose: 'any maskable',
           },
         ],
