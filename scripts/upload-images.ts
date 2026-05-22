@@ -62,7 +62,7 @@ async function uploadImages() {
         })
 
       if (error) {
-        if (error.message.includes('already exists') || (error as any).statusCode === '409') {
+        if (error.message.includes('already exists') || 'statusCode' in error && (error as { statusCode?: string }).statusCode === '409') {
           skipped++
         } else {
           console.error(`Error subiendo ${storagePath}: ${error.message}`)

@@ -14,6 +14,8 @@ function GifSlot({ url, last }: { url: string | null; last: boolean }) {
         <img
           src={url}
           alt=""
+          loading="lazy"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
         />
       )}
@@ -33,6 +35,7 @@ export interface TodayWorkout {
 
 interface TodayCardProps {
   workout?: TodayWorkout | null;
+  isRestDay?: boolean;
   streak?: number | null;
   dayLabel?: string;
   previewGifs?: string[];
@@ -41,6 +44,7 @@ interface TodayCardProps {
 
 export const TodayCard = ({
   workout,
+  isRestDay = false,
   dayLabel = "Hoy",
   previewGifs = [],
   gifCount = 0,
@@ -71,7 +75,7 @@ export const TodayCard = ({
               className={`w-full transition-opacity duration-500 mb-2 ${isLoadingGifs ? "opacity-0" : "opacity-100"}`}
             >
               <p className="text-xs text-white font-medium mb-1">
-                Entrenamiento de hoy
+                {dayLabel} · Entrenamiento
               </p>
               <h2 className="text-[22px] font-semibold text-white leading-tight">
                 {workout.name} - {workout.description}
@@ -84,13 +88,6 @@ export const TodayCard = ({
               )}
             </div>
 
-            {/* TODO: Mover a topbar */}
-            {/*             {streak != null && streak > 0 && (
-              <div className={`inline-flex items-center gap-1.5 bg-[#d1ff9f] text-[#111111] text-xs font-semibold px-3 py-1.5 rounded-full mb-5 transition-opacity duration-500 ${isLoadingGifs ? "invisible" : "visible"}`}>
-                <Flame size={13} className="text-black" />
-                {streak} {streak < 2 ? "día" : "días"} de racha
-              </div>
-            )} */}
 
             {workout.completed ? (
               <div className="w-full flex justify-center items-center gap-2 bg-[#9BFF30] text-black text-md font-medium px-5 py-3 rounded-full">
@@ -113,19 +110,27 @@ export const TodayCard = ({
           <p className="text-xs text-[#6B6B6B] font-medium mb-4">
             Hoy · {dayLabel}
           </p>
-          <EmptyState
-            icon="🏋️"
-            title="Sin rutina para hoy"
-            description="Todavía no configuraste un plan de entrenamiento."
-            action={
-              <Link
-                to="/routines"
-                className="inline-flex items-center gap-2 bg-[#9BFF30] text-black text-sm font-bold px-5 py-3 rounded-full"
-              >
-                Crear rutina
-              </Link>
-            }
-          />
+          {isRestDay ? (
+            <EmptyState
+              icon="😴"
+              title="Día de descanso"
+              description="Hoy toca recuperar. El descanso también es parte del entrenamiento."
+            />
+          ) : (
+            <EmptyState
+              icon="🏋️"
+              title="Sin rutina para hoy"
+              description="Todavía no configuraste un plan de entrenamiento."
+              action={
+                <Link
+                  to="/routines"
+                  className="inline-flex items-center gap-2 bg-[#9BFF30] text-black text-sm font-bold px-5 py-3 rounded-full"
+                >
+                  Crear rutina
+                </Link>
+              }
+            />
+          )}
         </div>
       )}
     </div>

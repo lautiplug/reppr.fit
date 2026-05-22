@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { OverallStatus } from "@/components/home/OverallStatus";
+import * as Sentry from '@sentry/react';
 import { TodayCard } from "@/components/home/TodayCard";
 import { LastSession } from "@/components/home/LastSession";
 import type { SessionExercise } from "@/components/home/LastSession";
@@ -33,13 +33,18 @@ export const Home = () => {
 
   useEffect(() => {
     const daySchedule = schedule?.[selectedDay];
-    if (daySchedule?.type !== "training") { setPreviewGifs([]); setGifCount(0); return; }
+    if (daySchedule?.type !== "training") {
+      void Promise.resolve().then(() => { setPreviewGifs([]); setGifCount(0); });
+      return;
+    }
 
     const exercises = daySchedule.exercises.slice(0, 3);
-    setGifCount(exercises.length);
     const already = exercises.map((e: DayExercise) => e.gif_url).filter((u): u is string => !!u);
 
-    if (already.length === exercises.length) { setPreviewGifs(already); return; }
+    if (already.length === exercises.length) {
+      void Promise.resolve().then(() => { setGifCount(exercises.length); setPreviewGifs(already); });
+      return;
+    }
 
     const missingNames = exercises.filter((e: DayExercise) => !e.gif_url).map((e: DayExercise) => e.name);
     supabase
@@ -47,12 +52,15 @@ export const Home = () => {
       .select("name, gif_url")
       .in("name", missingNames)
       .then(({ data, error }) => {
-        if (error) { console.error("Error cargando gifs:", error.message); return; }
+        if (error) { Sentry.captureException(error); return; }
         const gifByName: Record<string, string> = {};
         if (data) for (const row of data) if (row.gif_url) gifByName[row.name] = row.gif_url;
+        setGifCount(exercises.length);
         setPreviewGifs(exercises.map((e: DayExercise) => e.gif_url ?? gifByName[e.name] ?? "").filter(Boolean));
       });
   }, [selectedDay, schedule]);
+
+  const selectedSchedule = schedule?.[selectedDay];
 
   const streak = (() => {
     if (history.length === 0) return 0;
@@ -68,15 +76,37 @@ export const Home = () => {
     return count;
   })();
 
-  const lastSession = history[0] ?? null;
+  const selectedWorkoutName = selectedSchedule?.type === "training" ? selectedSchedule.workoutName : null;
+  const lastSessionForDay = selectedWorkoutName
+    ? (history.find((s: CompletedSession) => s.workoutName === selectedWorkoutName) ?? null)
+    : null;
+  const lastSession = lastSessionForDay ?? history[0] ?? null;
+  const lastSessionLabel = lastSessionForDay ? `Última sesión · ${DAY_LABELS[selectedDay]}` : "Última sesión";
+
+  const prevSessionForDay = selectedWorkoutName
+    ? (history.filter((s: CompletedSession) => s.workoutName === selectedWorkoutName)[1] ?? null)
+    : null;
+  const prevSession = prevSessionForDay ?? history[1] ?? null;
+
   const lastSessionExercises: SessionExercise[] | null = lastSession
     ? lastSession.exercises.map(ex => {
-        const maxWeight = ex.sets.reduce((max, s) => Math.max(max, s.weight_kg ?? 0), 0);
+        const sets = ex.sets ?? [];
+        const maxWeight = sets.reduce((max, s) => Math.max(max, s.weight_kg ?? 0), 0);
+        const prevEx = prevSession?.exercises.find(
+          pe => pe.name === ex.name && !pe.skipped && pe.sets.length > 0
+        );
+        const prevMaxWeight = prevEx
+          ? prevEx.sets.reduce((max, s) => Math.max(max, s.weight_kg ?? 0), 0)
+          : null;
+        const weightDelta = prevMaxWeight != null && maxWeight > 0
+          ? Math.round((maxWeight - prevMaxWeight) * 10) / 10
+          : null;
         return {
           name: ex.name_es ?? ex.name,
           muscle: "",
-          sets: ex.sets.length,
+          sets: sets.length,
           weight: maxWeight > 0 ? `${maxWeight} kg` : "—",
+          weightDelta,
         };
       })
     : null;
@@ -114,12 +144,13 @@ export const Home = () => {
       })
     : null;
 
-  const selectedSchedule = schedule?.[selectedDay];
   const todayKey = new Date().toISOString().slice(0, 10);
   const alreadyCompleted =
     selectedSchedule?.type === "training" &&
     !active &&
     history.some((s: CompletedSession) => s.date.slice(0, 10) === todayKey && s.workoutName === selectedSchedule.workoutName);
+
+  const isRestDay = selectedSchedule?.type === "rest";
 
   const selectedWorkout =
     selectedSchedule?.type === "training"
@@ -157,10 +188,9 @@ export const Home = () => {
           />
         </div>
         <div className="px-5 flex flex-col gap-5">
-          <TodayCard workout={selectedWorkout} streak={streak} dayLabel={DAY_LABELS[selectedDay]} previewGifs={previewGifs} gifCount={gifCount} />
-          <LastSession exercises={lastSessionExercises} />
+          <TodayCard workout={selectedWorkout} isRestDay={isRestDay} streak={streak} dayLabel={DAY_LABELS[selectedDay]} previewGifs={previewGifs} gifCount={gifCount} />
+          <LastSession exercises={lastSessionExercises} label={lastSessionLabel} />
           <RoutinesPreview routines={routines} />
-          <OverallStatus />
         </div>
       </div>
     </section>

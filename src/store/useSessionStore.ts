@@ -1,5 +1,6 @@
 import { create } from 'zustand/react'
 import { persist } from 'zustand/middleware'
+import * as Sentry from '@sentry/react'
 import type { DayExercise, CompletedSession, CompletedSet } from '@/types'
 import { supabase } from '@/lib/supabase'
 import { useAuthStore } from '@/store/useAuthStore'
@@ -14,6 +15,7 @@ export interface ActiveSet {
   completed: boolean
   rir?: number        // 0 | 1 | 2 | 3 — Reps In Reserve (opcional)
   restSeconds?: number
+  plannedReps?: number  // reps planeadas originales del plan (inmutable)
 }
 
 export interface ActiveExercise {
@@ -124,6 +126,7 @@ export const useSessionStore = create<SessionState>()(
                 reps: s.reps,
                 weight_kg: s.weight_kg,
                 completed: false,
+                plannedReps: typeof s.reps === 'number' ? s.reps : undefined,
               })),
             })),
           },
@@ -200,7 +203,7 @@ export const useSessionStore = create<SessionState>()(
             duration_min: completed.durationMin,
             exercises: completed.exercises,
           }).then(({ error }) => {
-            if (error) console.error('Error guardando sesión:', error.message)
+            if (error) Sentry.captureException(error)
           })
         }
         return completed

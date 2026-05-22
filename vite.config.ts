@@ -3,6 +3,7 @@ import react from '@vitejs/plugin-react-swc'
 import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 import { VitePWA } from 'vite-plugin-pwa'
+import { sentryVitePlugin } from '@sentry/vite-plugin'
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL ?? ''
 let supabaseOrigin: string | null = null
@@ -22,6 +23,13 @@ export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    sentryVitePlugin({
+      org: 'o4511190448209920',
+      project: 'reppr-fit',
+      // SENTRY_AUTH_TOKEN must be set in .env.local (never commit)
+      authToken: process.env.SENTRY_AUTH_TOKEN,
+      telemetry: false,
+    }),
     VitePWA({
       registerType: 'autoUpdate',
       manifest: {
@@ -58,6 +66,8 @@ export default defineConfig({
           "https://*.supabase.co",
           "wss://*.supabase.co",
           'https://exercisedb.p.rapidapi.com',
+          'https://*.sentry.io',
+          'https://o4511190448209920.ingest.us.sentry.io',
           // Allow local Supabase for dev (e.g. http://127.0.0.1:54321) and its WS endpoint.
           ...(supabaseOrigin ? [supabaseOrigin] : []),
           ...(supabaseHost ? [`ws://${supabaseHost}`, `wss://${supabaseHost}`] : []),
@@ -76,6 +86,9 @@ export default defineConfig({
       'X-Content-Type-Options': 'nosniff',
       'Referrer-Policy': 'strict-origin-when-cross-origin',
     },
+  },
+  build: {
+    sourcemap: true,
   },
   resolve: {
     alias: {

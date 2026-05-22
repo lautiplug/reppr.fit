@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import * as Sentry from '@sentry/react'
 import { supabase } from '@/lib/supabase'
 
 export const Auth = () => {
@@ -13,7 +14,7 @@ export const Auth = () => {
       options: { redirectTo: window.location.origin },
     })
     if (error) {
-      console.error('[Auth] Google sign-in error:', error)
+      Sentry.captureException(error)
       setError('No se pudo iniciar sesión. Intentá de nuevo.')
       setLoading(false)
     }

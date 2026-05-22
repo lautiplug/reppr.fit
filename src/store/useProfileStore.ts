@@ -1,4 +1,5 @@
 import { create } from 'zustand/react'
+import * as Sentry from '@sentry/react'
 import { supabase } from '@/lib/supabase'
 
 export interface UserProfile {
@@ -30,7 +31,7 @@ export const useProfileStore = create<ProfileState>()(
         .select('*')
         .eq('user_id', userId)
         .single()
-      if (error && error.code !== 'PGRST116') console.error('Error cargando perfil:', error.message)
+      if (error && error.code !== 'PGRST116') Sentry.captureException(error)
       if (data) {
         set({
           profile: {
