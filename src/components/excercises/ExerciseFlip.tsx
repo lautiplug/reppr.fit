@@ -42,7 +42,7 @@ export function ExerciseFlip({ gifUrl, alt, playing = false, className, onLoad }
         src={img1}
         alt=""
         aria-hidden
-        loading="eager"
+        loading="lazy"
         decoding="async"
         className="absolute inset-0 w-full h-full object-cover"
         style={{ animation: 'exercise-flip-1 2s ease-in-out infinite', animationPlayState: playState }}

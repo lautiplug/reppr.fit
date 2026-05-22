@@ -7,11 +7,15 @@ import {
   History,
 } from "lucide-react";
 import { useRoutineQuery } from "@/lib/queries";
+import { useSessionStore } from "@/store/useSessionStore";
 
 export const NavigationBar = () => {
   const { pathname } = useLocation();
   const { data } = useRoutineQuery();
   const hasRoutine = !!data?.schedule;
+  const activeSession = useSessionStore(s => s.active);
+
+  if (activeSession) return null;
 
   const navigationItems = [
     { name: "Home", icon: House, linkTo: "/" },

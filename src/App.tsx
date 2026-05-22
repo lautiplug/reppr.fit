@@ -18,7 +18,6 @@ import { Home } from "@/pages/Home";
 import { Routines } from "@/pages/Routines";
 import { Excercises } from "@/pages/Excercises";
 import { DayEditor } from "@/pages/DayEditor";
-import { ActiveSessions } from "@/pages/ActiveSessions";
 import { Profile } from "@/pages/Profile";
 import { ProfileSetup } from "@/pages/ProfileSetup";
 import SessionSummary from "@/pages/SessionSummary";
@@ -26,6 +25,7 @@ import { Progress } from "@/pages/Progress";
 import { History } from "@/pages/History";
 import { NavigationBar } from "@/components/ui/NavigationBar";
 import { TopBar } from "@/components/ui/TopBar";
+import { ErrorBoundary } from "@/components/ui/ErrorBoundary";
 
 const AnimatedOutlet = () => {
   const { pathname } = useLocation();
@@ -36,10 +36,30 @@ const AnimatedOutlet = () => {
   );
 };
 
+const PageError = () => (
+  <div className="flex flex-col items-center justify-center gap-4 px-8 py-24 text-center">
+    <p className="text-3xl">⚠️</p>
+    <p className="text-white font-black text-lg" style={{ fontFamily: "Syne, sans-serif" }}>
+      Esta página falló
+    </p>
+    <p className="text-[#8E8E93] text-sm leading-relaxed">
+      Podés volver al inicio o recargar la app.
+    </p>
+    <button
+      onClick={() => window.location.assign("/")}
+      className="mt-1 px-5 py-2.5 bg-brand text-black font-bold rounded-2xl text-sm"
+    >
+      Ir al inicio
+    </button>
+  </div>
+);
+
 const AppLayout = () => (
   <>
     <TopBar />
-    <AnimatedOutlet />
+    <ErrorBoundary fallback={<PageError />}>
+      <AnimatedOutlet />
+    </ErrorBoundary>
     <NavigationBar />
   </>
 );
@@ -148,7 +168,6 @@ export const App = () => {
             <Route path="/routines" element={<Routines />} />
             <Route path="/routines/edit/:day" element={<DayEditor />} />
             <Route path="/exercises" element={<Excercises />} />
-            <Route path="/session" element={<ActiveSessions />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/history" element={<History />} />
             <Route path="/profile" element={<Profile />} />

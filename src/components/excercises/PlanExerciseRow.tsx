@@ -15,6 +15,8 @@ export function PlanExerciseRow({ ex, index }: { ex: DayExercise; index: number 
             src={ex.gif_url}
             alt={ex.name_es ?? ex.name}
             onLoad={onLoad}
+            loading="lazy"
+            decoding="async"
             className={`w-full h-full object-cover transition-opacity duration-500 ${gifLoaded ? "opacity-100" : "opacity-0"}`}
           />
           <div className="absolute inset-0 bg-linear-to-t from-dark via-dark/20 to-transparent" />

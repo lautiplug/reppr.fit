@@ -85,7 +85,13 @@ function buildExerciseData(
 
 // --- Custom tooltip ---
 
-function CustomTooltip({ active, payload, label }: any) {
+interface TooltipProps {
+  active?: boolean;
+  payload?: { payload: WeekPoint }[];
+  label?: string;
+}
+
+function CustomTooltip({ active, payload, label }: TooltipProps) {
   if (!active || !payload?.length) return null;
   const d = payload[0].payload as WeekPoint;
   return (

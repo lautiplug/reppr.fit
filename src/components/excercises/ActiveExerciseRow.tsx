@@ -1,31 +1,27 @@
 import { ChevronDown, ChevronUp, Check, Plus, X, SkipForward, Play, Pause } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSessionStore, type ActiveExercise } from "@/store/useSessionStore";
 import { useGifLoader } from "./hooks/useGifLoader";
 import { ExerciseFlip } from "./ExerciseFlip";
 
 export function ActiveExerciseRow({ ex, exIndex }: { ex: ActiveExercise; exIndex: number }) {
-  const [expanded, setExpanded] = useState(true);
   const [playing, setPlaying] = useState(false);
-  const prevAllDone = useRef(false);
+  // userExpanded: null = seguir lógica automática, true/false = override del usuario
+  const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
   const { gifLoaded, onLoad } = useGifLoader();
   const { toggleSet, updateSet, skipExercise, removeSet, addSet } = useSessionStore();
 
   const completedCount = ex.sets.filter((s) => s.completed).length;
   const allDone = completedCount === ex.sets.length;
 
-  useEffect(() => {
-    if (allDone && !prevAllDone.current) {
-      setExpanded(false);
-    }
-    prevAllDone.current = allDone;
-  }, [allDone]);
+  // Auto-colapsar cuando están todos los sets completos, salvo override del usuario
+  const expanded = userExpanded ?? !allDone;
 
   return (
     <div className={`rounded-2xl overflow-hidden border transition-colors ${allDone ? "border-[#9BFF30]/40 bg-dark" : "border-[#38383A] bg-dark"}`}>
 
-      <button onClick={() => setExpanded(v => !v)} className="w-full text-left relative cursor-pointer">
+      <button onClick={() => setUserExpanded(!expanded)} className="w-full text-left relative cursor-pointer">
         {ex.gif_url ? (
           <div className="relative h-44 overflow-hidden">
             {!gifLoaded && <Skeleton className="absolute inset-0 rounded-none" />}

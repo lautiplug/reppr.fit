@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, Search, Check, Pencil } from "lucide-react";
 import { useState, useMemo, useCallback, useRef, useEffect } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
 
 function useDebounce<T>(value: T, delay: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -22,6 +23,23 @@ import { useExercises } from "@/hooks/useExercises";
 import { useRoutineQuery, useSaveRoutineMutation } from "@/lib/queries";
 import { supabase } from "@/lib/supabase";
 import { suggestWorkoutName } from "@/lib/workoutName";
+
+function ExerciseThumbnail({ gifUrl, alt }: { gifUrl: string; alt: string }) {
+  const [loaded, setLoaded] = useState(false);
+  return (
+    <div className="relative w-full h-full">
+      {!loaded && <Skeleton className="absolute inset-0 rounded-none" />}
+      <img
+        src={gifUrl}
+        alt={alt}
+        loading="lazy"
+        decoding="async"
+        onLoad={() => setLoaded(true)}
+        className={`w-full h-full object-cover transition-opacity duration-300 ${loaded ? "opacity-100" : "opacity-0"}`}
+      />
+    </div>
+  );
+}
 
 const ALL_MUSCLES = Object.keys(MUSCLE_LABELS) as MuscleGroup[];
 
@@ -106,6 +124,7 @@ export const DayEditor = () => {
           return next;
         });
       });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const loadMoreRef = useRef(loadMore);
@@ -179,6 +198,13 @@ export const DayEditor = () => {
     if (isSelected(name)) {
       setSelectedExercises((prev) => prev.filter((e) => e.name !== name));
     } else {
+      // Cachear al seleccionar para que gif_url sobreviva cuando exercises se vacía entre fetches
+      if (gif_url) {
+        setExerciseCache((prev) => ({
+          ...prev,
+          [name]: { id: name, name, name_es, muscle_group, gif_url, created_at: '', secondary_muscles: undefined },
+        }));
+      }
       setSelectedExercises((prev) => [
         ...prev,
         {
@@ -342,13 +368,7 @@ export const DayEditor = () => {
               >
                 <div className="w-16 h-16 rounded-xl overflow-hidden bg-[#2C2C2E] shrink-0">
                   {ex.gif_url ? (
-                    <img
-                      src={ex.gif_url}
-                      alt={ex.name_es ?? ex.name}
-                      className="w-full h-full object-cover"
-                      loading="eager"
-                      decoding="async"
-                    />
+                    <ExerciseThumbnail gifUrl={ex.gif_url} alt={ex.name_es ?? ex.name} />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-[#8E8E93] text-xs text-center px-1">
                       Sin imagen

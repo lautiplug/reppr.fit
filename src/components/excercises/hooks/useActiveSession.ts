@@ -29,7 +29,10 @@ export function useActiveSession() {
   const hiddenAt = useRef<number | null>(null);
 
   useEffect(() => {
-    if (!active) { setElapsed("0:00"); pausedMs.current = 0; return; }
+    if (!active) {
+      pausedMs.current = 0;
+      return;
+    }
 
     const tick = () => {
       const ms = Date.now() - new Date(active.startedAt).getTime() - pausedMs.current;
@@ -55,7 +58,7 @@ export function useActiveSession() {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisibility);
     };
-  }, [!!active, active?.startedAt]);
+  }, [active, active?.startedAt]);
 
   const totalSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.length, 0) ?? 0;
   const completedSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0) ?? 0;

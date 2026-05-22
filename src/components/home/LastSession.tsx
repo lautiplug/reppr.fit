@@ -9,15 +9,17 @@ export interface SessionExercise {
   sets: number;
   weight: string;
   pr?: boolean;
+  weightDelta?: number | null; // kg vs sesión anterior (null = sin datos)
 }
 
 interface LastSessionProps {
   exercises?: SessionExercise[] | null;
+  label?: string;
 }
 
 const PREVIEW_COUNT = 3;
 
-export const LastSession = ({ exercises }: LastSessionProps) => {
+export const LastSession = ({ exercises, label = "Última sesión" }: LastSessionProps) => {
   const [expanded, setExpanded] = useState(false);
   const visible = exercises
     ? expanded
@@ -29,10 +31,10 @@ export const LastSession = ({ exercises }: LastSessionProps) => {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <h2 className="text-[17px] font-bold text-white">Última sesión</h2>
+        <h2 className="text-[17px] font-bold text-white">{label}</h2>
         {exercises && exercises.length > 0 && (
           <Link
-            to="/exercises"
+            to="/history"
             className="flex items-center gap-1 text-[13px] p-2 px-4 rounded-full text-[#6B7280] font-medium"
           >
             Ver más <ArrowRight size={14} />
@@ -56,18 +58,28 @@ export const LastSession = ({ exercises }: LastSessionProps) => {
                     {ex.sets} series
                   </span>
                 </div>
-                <div className="flex items-center gap-2 shrink-0 ml-3">
-                  {ex.pr && (
-                    <span className="text-[11px] font-bold text-black bg-[#9BFF30] px-2 py-0.5 rounded-full">
-                      PR
+                <div className="flex flex-col items-end gap-0.5 shrink-0 ml-3">
+                  <div className="flex items-center gap-2">
+                    {ex.pr && (
+                      <span className="text-[11px] font-bold text-black bg-brand px-2 py-0.5 rounded-full">
+                        PR
+                      </span>
+                    )}
+                    <p
+                      className="text-[17px] font-black text-[#F4F4F5]"
+                      style={{ fontFamily: "Syne, sans-serif" }}
+                    >
+                      {ex.weight}
+                    </p>
+                  </div>
+                  {ex.weightDelta != null && ex.weightDelta !== 0 && (
+                    <span className={`text-[11px] font-semibold ${ex.weightDelta > 0 ? 'text-brand' : 'text-[#ff625a]'}`}>
+                      {ex.weightDelta > 0 ? `+${ex.weightDelta}` : ex.weightDelta} kg
                     </span>
                   )}
-                  <p
-                    className="text-[17px] font-black text-[#F4F4F5]"
-                    style={{ fontFamily: "Syne, sans-serif" }}
-                  >
-                    {ex.weight}
-                  </p>
+                  {ex.weightDelta === 0 && (
+                    <span className="text-[11px] font-semibold text-white/30">= igual</span>
+                  )}
                 </div>
               </div>
             ))}

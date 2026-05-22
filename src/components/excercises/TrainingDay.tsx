@@ -59,13 +59,15 @@ export const TrainingDay = ({
   } = useActiveSession();
   const alreadyDone = !active && completedToday(workoutName, history);
 
+  // Precargar solo el ejercicio actual + el siguiente para no saturar la red
   useEffect(() => {
-    exercises.forEach((ex) => {
+    const toPreload = exercises.slice(currentExerciseIndex, currentExerciseIndex + 2);
+    toPreload.forEach((ex) => {
       if (!ex.gif_url) return;
       new Image().src = ex.gif_url;
       new Image().src = getFlipImageUrl(ex.gif_url);
     });
-  }, [exercises]);
+  }, [exercises, currentExerciseIndex]);
 
   return (
     <div
@@ -156,8 +158,8 @@ export const TrainingDay = ({
 
       {!active && (
         <div
-          className="px-5 z-20"
-          style={{ bottom: "calc(5rem + env(safe-area-inset-bottom, 0px))" }}
+          className="fixed bottom-0 left-0 right-0 px-5 z-20 pb-2"
+          style={{ paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" }}
         >
           {alreadyDone ? (
             <div className="flex flex-col gap-2 mt-6">
@@ -234,6 +236,7 @@ export const TrainingDay = ({
               onPrev={prevExercise}
               onNext={nextExercise}
               onSwap={() => setSwapOpen(true)}
+              history={history}
             />
           </div>
         </div>

@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useMemo } from 'react'
 import { Play, Pause, SkipForward, Plus, X, Check, ArrowLeftRight } from 'lucide-react'
 import { useSessionStore, type ActiveExercise } from '@/store/useSessionStore'
 import { ExerciseFlip } from './ExerciseFlip'
@@ -6,6 +6,8 @@ import { useGifLoader } from './hooks/useGifLoader'
 import { RIRSelector } from './RIRSelector'
 import { RestTimer } from './RestTimer'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useProgressionSuggestion, getIntraSessionSuggestion } from '@/hooks/useProgressionSuggestion'
+import type { CompletedSession } from '@/types'
 
 interface ExerciseStoryProps {
   ex: ActiveExercise
@@ -14,15 +16,33 @@ interface ExerciseStoryProps {
   onPrev: () => void
   onNext: () => void
   onSwap: () => void
+  history: CompletedSession[]
 }
 
 const REST_SECONDS = 90
 
-export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap }: ExerciseStoryProps) {
+export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap, history }: ExerciseStoryProps) {
   const [playing, setPlaying] = useState(false)
+  const [intraDismissed, setIntraDismissed] = useState(false)
   const { gifLoaded, onLoad } = useGifLoader()
   const { toggleSet, updateSet, skipExercise, removeSet, addSet, startRestTimer, clearRestTimer, active } = useSessionStore()
   const touchStartX = useRef<number | null>(null)
+  const historySuggestion = useProgressionSuggestion(ex.name, history)
+
+  // Reps de referencia: las del plan para la serie activa (inmutables).
+  // Si no hay plan (ejercicio sin reps definidas), caer a null — sin expectativa.
+  const nextIncompleteIdx = ex.sets.findIndex(s => !s.completed)
+  const currentPlannedSet = nextIncompleteIdx >= 0 ? ex.sets[nextIncompleteIdx] : ex.sets[ex.sets.length - 1]
+  const expectedReps = currentPlannedSet?.plannedReps ?? null
+
+  const completedSets = ex.sets.filter(s => s.completed)
+  const intraSessionSuggestion = getIntraSessionSuggestion(completedSets, expectedReps)
+
+  // Intra-sesión tiene prioridad sobre historial una vez que hay sets completados.
+  // Si el usuario descartó la sugerencia intra-sesión, volver al chip de historial.
+  const activeChip = (!intraDismissed && intraSessionSuggestion)
+    ? intraSessionSuggestion
+    : (historySuggestion ? { ...historySuggestion, isHistory: true as const } : null)
 
   const restTimer = active?.restTimer
   const isRestingThisExercise = restTimer?.exerciseIndex === exIndex
@@ -57,6 +77,19 @@ export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap }: Ex
       return
     }
     toggleSet(exIndex, si)
+
+    // Auto-rellenar el peso del siguiente set con la sugerencia intra-sesión
+    const nextSi = si + 1
+    if (nextSi < ex.sets.length && !ex.sets[nextSi].completed) {
+      const updatedCompleted = ex.sets
+        .slice(0, nextSi)
+        .map((set, i) => i === si ? { ...set, completed: true } : set)
+        .filter(set => set.completed)
+      const suggestion = getIntraSessionSuggestion(updatedCompleted, expectedReps)
+      if (suggestion && ex.sets[nextSi].weight_kg == null) {
+        updateSet(exIndex, nextSi, { weight_kg: suggestion.suggestedWeight })
+      }
+    }
   }
 
   const handleRestDone = (elapsed: number) => {
@@ -65,7 +98,13 @@ export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap }: Ex
     clearRestTimer()
   }
 
-  const nextIncompleteSet = ex.sets.findIndex(s => !s.completed)
+  const nextIncompleteSet = nextIncompleteIdx
+
+  const restElapsedOnMount = useMemo(
+    () => restTimer ? Math.floor((Date.now() - new Date(restTimer.startedAt).getTime()) / 1000) : 0,
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [restTimer?.startedAt]
+  )
 
   return (
     <div
@@ -168,6 +207,93 @@ export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap }: Ex
 
       {/* Cuerpo: series */}
       <div className="flex-1 overflow-y-auto px-4 pt-3 pb-4 flex flex-col gap-2">
+        {/* Chip de progresión */}
+        {activeChip && (() => {
+          const isIntra = 'prevWeight' in activeChip
+          if (isIntra) {
+            // Chip intra-sesión: basado en sets completados hoy
+            const chip = activeChip
+            const applyWeight = () => {
+              const nextSet = ex.sets.findIndex(s => !s.completed)
+              if (nextSet >= 0) updateSet(exIndex, nextSet, { weight_kg: chip.suggestedWeight })
+            }
+            const reasonLabel =
+              chip.reason === 'reduce' ? '↓ Bajá el peso' :
+              chip.reason === 'increase' ? '↑ Podés subir' :
+              '= Mantener'
+            const reasonColor =
+              chip.reason === 'reduce' ? 'text-[#ff625a]' :
+              chip.reason === 'increase' ? 'text-brand' :
+              'text-white/40'
+            return (
+              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-3 py-2 mb-1">
+                <div className="flex items-center gap-1.5 text-[12px] font-medium flex-wrap">
+                  <span className={`font-bold ${reasonColor}`}>{reasonLabel}</span>
+                  <span className="text-white/30">·</span>
+                  <span className="text-white/60">
+                    Serie anterior: <span className="text-white font-bold">{chip.prevWeight}kg × {chip.prevReps === 'fallo' ? 'fallo' : `${chip.prevReps}`}</span>
+                  </span>
+                  {chip.expectedReps !== null && chip.prevReps !== 'fallo' && chip.prevReps < chip.expectedReps && (
+                    <span className="text-white/30">({chip.expectedReps} esperadas)</span>
+                  )}
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0 ml-2">
+                  <button
+                    onClick={() => setIntraDismissed(true)}
+                    className="text-[11px] font-semibold text-white/30 hover:text-white/60 px-2 py-1 rounded-lg cursor-pointer transition-colors"
+                  >
+                    Ignorar
+                  </button>
+                  <button
+                    onClick={applyWeight}
+                    className="text-[11px] font-bold text-black bg-brand px-2.5 py-1 rounded-lg cursor-pointer"
+                  >
+                    {chip.suggestedWeight}kg
+                  </button>
+                </div>
+              </div>
+            )
+          } else {
+            // Chip de historial: antes de completar el primer set
+            const chip = activeChip
+            const suggestedWeight = 'suggestedWeight' in chip ? chip.suggestedWeight : null
+            return (
+              <div className="flex items-center justify-between bg-white/5 border border-white/10 rounded-xl px-3 py-2 mb-1">
+                <div className="flex items-center gap-1.5 text-[12px] text-white/60 font-medium flex-wrap">
+                  <span>Última vez:</span>
+                  <span className="text-white font-bold">
+                    {'lastWeight' in chip && `${chip.lastWeight}kg`} × {'lastReps' in chip && (chip.lastReps === 'fallo' ? 'fallo' : `${chip.lastReps} reps`)}
+                  </span>
+                  {'lastRIR' in chip && chip.lastRIR !== null && (
+                    <span className="text-white/40">RIR {chip.lastRIR}</span>
+                  )}
+                  {suggestedWeight !== null && 'reason' in chip && chip.reason === 'increase' && (
+                    <>
+                      <span className="text-white/30">→</span>
+                      <span className="text-brand font-bold">Hoy: {suggestedWeight}kg</span>
+                    </>
+                  )}
+                  {suggestedWeight !== null && 'reason' in chip && chip.reason === 'maintain' && (
+                    <span className="text-white/40 font-medium">· mantener</span>
+                  )}
+                </div>
+                {suggestedWeight !== null && (
+                  <button
+                    onClick={() => {
+                      const nextSet = ex.sets.findIndex(s => !s.completed)
+                      const targetSet = nextSet >= 0 ? nextSet : 0
+                      updateSet(exIndex, targetSet, { weight_kg: suggestedWeight })
+                    }}
+                    className="text-[11px] font-bold text-black bg-brand px-2.5 py-1 rounded-lg shrink-0 ml-2 cursor-pointer"
+                  >
+                    Usar
+                  </button>
+                )}
+              </div>
+            )
+          }
+        })()}
+
         {/* Cabecera columnas */}
         <div className="flex items-center gap-2 mb-1">
           <span className="w-6 shrink-0" />
@@ -251,7 +377,7 @@ export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap }: Ex
                 <div className="pl-8">
                   <RestTimer
                     seconds={restTimer.totalSeconds}
-                    elapsedOnMount={Math.floor((Date.now() - new Date(restTimer.startedAt).getTime()) / 1000)}
+                    elapsedOnMount={restElapsedOnMount}
                     onDone={handleRestDone}
                     onSkip={handleRestDone}
                   />

@@ -1,8 +1,7 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 
 export function useGifLoader() {
-  const imgRef = useRef<HTMLImageElement>(null);
-  const [gifLoaded, setGifLoaded] = useState(() => imgRef.current?.complete ?? false);
+  const [gifLoaded, setGifLoaded] = useState(false);
 
-  return { gifLoaded, imgRef, onLoad: () => setGifLoaded(true) };
+  return { gifLoaded, onLoad: () => setGifLoaded(true) };
 }

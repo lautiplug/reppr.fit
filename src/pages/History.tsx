@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { Search, ChevronRight, Clock, Zap, Weight, X } from "lucide-react";
 import { useSessionHistoryPagedQuery } from "@/lib/queries";
 import type { CompletedSession, CompletedExercise } from "@/types";
@@ -219,14 +219,15 @@ export const History = () => {
   const { data, isLoading, isFetching } = useSessionHistoryPagedQuery(page);
 
   // Acumular sesiones de todas las páginas cargadas
-  const sessions = useMemo(() => {
-    if (!data) return allSessions;
+  useEffect(() => {
+    if (!data) return;
     const newItems = data.items.filter(s => !allSessions.some(e => e.id === s.id));
-    if (newItems.length === 0) return allSessions;
-    const merged = [...allSessions, ...newItems];
-    setAllSessions(merged);
-    return merged;
+    if (newItems.length > 0) setAllSessions(prev => [...prev, ...newItems]);
+  // allSessions intencionalmente excluido: solo queremos reaccionar a nuevos datos de página
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data]);
+
+  const sessions = allSessions;
 
   const total = data?.total ?? 0;
   const hasMore = sessions.length < total;

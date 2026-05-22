@@ -36,14 +36,10 @@ vi.mock('@/store/useAuthStore', () => ({
   },
 }))
 
-// Capturamos el callback de onAuthStateChange para dispararlo manualmente
-let authCallback: (event: string, session: { user: { id: string } } | null) => void
-
 vi.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      onAuthStateChange: (cb: typeof authCallback) => {
-        authCallback = cb
+      onAuthStateChange: () => {
         return { data: { subscription: { unsubscribe: vi.fn() } } }
       },
       getSession: vi.fn().mockResolvedValue({ data: { session: null } }),

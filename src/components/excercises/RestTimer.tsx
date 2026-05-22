@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
 
 interface RestTimerProps {
@@ -10,11 +10,15 @@ interface RestTimerProps {
 
 export function RestTimer({ seconds, elapsedOnMount = 0, onDone, onSkip }: RestTimerProps) {
   const [remaining, setRemaining] = useState(() => Math.max(0, seconds - elapsedOnMount));
-  const startedAt = useRef(Date.now() - elapsedOnMount * 1000);
+  const [startedAtMs] = useState(() => Date.now() - elapsedOnMount * 1000);
+  const startedAt = useRef(startedAtMs);
   const onDoneRef = useRef(onDone);
-  onDoneRef.current = onDone;
   const onSkipRef = useRef(onSkip);
-  onSkipRef.current = onSkip;
+
+  useLayoutEffect(() => {
+    onDoneRef.current = onDone;
+    onSkipRef.current = onSkip;
+  });
 
   useEffect(() => {
     if (remaining <= 0) {

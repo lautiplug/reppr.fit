@@ -30,14 +30,14 @@ export const WeekEditor = ({ schedule, onConfirm, onBack, onReset }: Props) => {
   const { data: routineData } = useRoutineQuery();
   const saveRoutine = useSaveRoutineMutation();
 
-  const swapDays = (a: WeekDay, b: WeekDay) => {
+  const swapDays = useCallback((a: WeekDay, b: WeekDay) => {
     const current = routineData?.schedule ?? {};
     const newSchedule = { ...current, [a]: current[b], [b]: current[a] };
     saveRoutine.mutate({
       schedule: newSchedule,
       lastAnswers: routineData?.lastAnswers ?? null,
     });
-  };
+  }, [routineData, saveRoutine]);
 
   // Index being dragged
   const draggingIdx = useRef<number | null>(null);

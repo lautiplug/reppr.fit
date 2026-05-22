@@ -62,9 +62,11 @@ export function useExercises(muscleGroup?: MuscleGroup, search?: string) {
   useEffect(() => {
     pageRef.current = 0
     hasMoreRef.current = true
-    setHasMore(true)
-    setExercises([])
-    fetchPage(muscleGroup, search, 0)
+    void Promise.resolve().then(() => {
+      setHasMore(true)
+      setExercises([])
+      fetchPage(muscleGroup, search, 0)
+    })
 
     return () => { abortRef.current?.abort() }
   }, [muscleGroup, search, fetchPage])

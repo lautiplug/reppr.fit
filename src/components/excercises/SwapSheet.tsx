@@ -111,6 +111,8 @@ export function SwapSheet({ muscleGroup, currentName, onSelect, onClose }: SwapS
                   <img
                     src={opt.gif_url}
                     alt=""
+                    loading="lazy"
+                    decoding="async"
                     className="w-10 h-10 rounded-lg object-cover shrink-0"
                   />
                 ) : (
