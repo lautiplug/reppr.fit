@@ -24,6 +24,10 @@ MEJORAS-SEMANA.md
 supabase/.temp/
 supabase/.branches/
 
+# Supabase local data — never commit (contains real user data)
+supabase/seed.sql
+supabase/migrations/
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

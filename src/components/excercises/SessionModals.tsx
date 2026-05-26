@@ -1,4 +1,4 @@
-import { Check } from "lucide-react";
+import { Check, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface SessionSummary {
@@ -19,12 +19,19 @@ interface AbandonModalProps {
   onCancel: () => void;
 }
 
+interface FinishModalProps {
+  completedSets: number;
+  totalSets: number;
+  onConfirm: () => void;
+  onCancel: () => void;
+}
+
 export function SummaryModal({ summary, onClose }: SummaryModalProps) {
   return (
     <div className="fixed inset-0 bg-dark/40 flex items-end z-50">
       <div className="bg-[#2C2C2E] w-full rounded-t-3xl p-6 flex flex-col gap-5">
         <div className="flex flex-col items-center gap-2">
-          <div className="w-14 h-14 rounded-full bg-[#9BFF30] flex items-center justify-center">
+          <div className="w-14 h-14 rounded-full bg-brand flex items-center justify-center">
             <Check className="w-7 h-7 text-black" strokeWidth={3} />
           </div>
           <p
@@ -83,11 +90,56 @@ export function SummaryModal({ summary, onClose }: SummaryModalProps) {
 
         <button
           onClick={onClose}
-          className="w-full py-4 bg-[#9BFF30] text-black font-black text-base rounded-2xl"
+          className="w-full py-4 bg-brand text-black font-black text-base rounded-2xl"
           style={{ fontFamily: "Syne, sans-serif" }}
         >
           Listo
         </button>
+      </div>
+    </div>
+  );
+}
+
+export function FinishModal({ completedSets, totalSets, onConfirm, onCancel }: FinishModalProps) {
+  const pending = totalSets - completedSets;
+  return (
+    <div className="fixed inset-0 bg-black/60 flex items-end z-50">
+      <div className="bg-[#2C2C2E] w-full rounded-t-3xl p-6 flex flex-col gap-4">
+        <div className="flex flex-col items-center gap-2">
+          <div className="w-12 h-12 rounded-full bg-brand/15 flex items-center justify-center">
+            <Zap className="w-6 h-6 text-brand" />
+          </div>
+          <p
+            className="font-black text-lg text-white text-center"
+            style={{ fontFamily: "Syne, sans-serif" }}
+          >
+            ¿Finalizar el entreno?
+          </p>
+          {pending > 0 ? (
+            <p className="text-sm text-[#8E8E93] text-center">
+              Todavía te quedan{" "}
+              <span className="text-white font-semibold">{pending} series</span>{" "}
+              sin completar.
+            </p>
+          ) : (
+            <p className="text-sm text-[#8E8E93] text-center">
+              Completaste todas las series. ¡Buen trabajo!
+            </p>
+          )}
+        </div>
+        <button
+          onClick={onConfirm}
+          className="w-full py-3.5 bg-brand text-black font-black rounded-2xl"
+          style={{ fontFamily: "Syne, sans-serif" }}
+        >
+          Sí, finalizar
+        </button>
+        <Button
+          onClick={onCancel}
+          className="w-full py-3.5 bg-transparent text-white font-bold rounded-2xl"
+        >
+          Seguir entrenando
+        </Button>
       </div>
     </div>
   );
@@ -108,13 +160,13 @@ export function AbandonModal({ onConfirm, onCancel }: AbandonModalProps) {
         </p>
         <button
           onClick={onCancel}
-          className="w-full py-3.5 bg-[#9BFF30] rounded-full font-semibold"
+          className="w-full py-3.5 bg-brand rounded-full font-semibold text-black"
         >
           Seguir entrenando
         </button>
         <Button
           onClick={onConfirm}
-          className="w-full py-3.5 bg-0 text-white font-bold rounded-2xl"
+          className="w-full py-3.5 bg-transparent text-white font-bold rounded-2xl"
         >
           Sí, abandonar
         </Button>

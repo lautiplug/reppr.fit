@@ -9,7 +9,7 @@ import { getFlipImageUrl } from "./utils";
 import { PlanExerciseRow } from "./PlanExerciseRow";
 import { ExerciseStory } from "./ExerciseStory";
 import { SwapSheet } from "./SwapSheet";
-import { SummaryModal, AbandonModal } from "./SessionModals";
+import { SummaryModal, AbandonModal, FinishModal } from "./SessionModals";
 import { Card } from "@/components/ui/card";
 import { ShineBorder } from "../ui/shine-border";
 import type { CompletedSession } from "@/types";
@@ -52,9 +52,12 @@ export const TrainingDay = ({
     completedSets,
     summary,
     showAbandon,
+    showFinish,
     handleFinish,
+    confirmFinish,
     handleAbandon,
     setShowAbandon,
+    setShowFinish,
     clearSummary,
   } = useActiveSession();
   const alreadyDone = !active && completedToday(workoutName, history);
@@ -191,6 +194,14 @@ export const TrainingDay = ({
       )}
 
       {summary && <SummaryModal summary={summary} onClose={clearSummary} />}
+      {showFinish && (
+        <FinishModal
+          completedSets={completedSets}
+          totalSets={totalSets}
+          onConfirm={confirmFinish}
+          onCancel={() => setShowFinish(false)}
+        />
+      )}
       {showAbandon && (
         <AbandonModal
           onConfirm={handleAbandon}

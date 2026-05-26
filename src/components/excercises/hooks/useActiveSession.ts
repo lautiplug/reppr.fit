@@ -13,7 +13,6 @@ export type SessionSummary = {
   totalKg: number;
 };
 
-
 export function useActiveSession() {
   const { finishSession, abandonSession } = useSessionStore();
   const active = useSessionStore(s => s.active);
@@ -23,6 +22,7 @@ export function useActiveSession() {
 
   const [elapsed, setElapsed] = useState("0:00");
   const [showAbandon, setShowAbandon] = useState(false);
+  const [showFinish, setShowFinish] = useState(false);
   const [summary, setSummary] = useState<SessionSummary | null>(null);
   // pausedMs accumulates time spent with the app in background
   const pausedMs = useRef(0);
@@ -63,8 +63,16 @@ export function useActiveSession() {
   const totalSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.length, 0) ?? 0;
   const completedSets = active?.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0) ?? 0;
 
+  // Abre el modal de confirmación
   const handleFinish = () => {
     if (!active) return;
+    setShowFinish(true);
+  };
+
+  // Ejecuta el finish real tras confirmar
+  const confirmFinish = () => {
+    if (!active) return;
+    setShowFinish(false);
     const completedSetsCount = active.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.completed).length, 0);
     const totalSetsCount = active.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
     const totalKg = active.exercises.reduce((acc, ex) =>
@@ -89,9 +97,12 @@ export function useActiveSession() {
     completedSets,
     summary,
     showAbandon,
+    showFinish,
     handleFinish,
+    confirmFinish,
     handleAbandon,
     setShowAbandon,
+    setShowFinish,
     clearSummary: () => setSummary(null),
   };
 }
