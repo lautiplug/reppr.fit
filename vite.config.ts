@@ -32,6 +32,11 @@ export default defineConfig({
     }),
     VitePWA({
       registerType: 'autoUpdate',
+      workbox: {
+        skipWaiting: true,
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
+      },
       manifest: {
         name: 'Reppr.fit',
         short_name: 'Reppr',
