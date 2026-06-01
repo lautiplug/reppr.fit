@@ -9,7 +9,7 @@ export function PlanExerciseRow({ ex, index }: { ex: DayExercise; index: number 
   return (
     <div className="rounded-2xl overflow-hidden bg-dark border border-[#38383A]">
       {ex.gif_url && (
-        <div className="relative h-32 overflow-hidden">
+        <div className="relative overflow-hidden">
           {!gifLoaded && <Skeleton className="absolute inset-0 rounded-none" />}
           <img
             src={ex.gif_url}
@@ -17,7 +17,7 @@ export function PlanExerciseRow({ ex, index }: { ex: DayExercise; index: number 
             onLoad={onLoad}
             loading="lazy"
             decoding="async"
-            className={`w-full h-full object-cover transition-opacity duration-500 ${gifLoaded ? "opacity-100" : "opacity-0"}`}
+            className={`w-full h-auto block transition-opacity duration-500 ${gifLoaded ? "opacity-100" : "opacity-0"}`}
           />
           <div className="absolute inset-0 bg-linear-to-t from-dark via-dark/20 to-transparent" />
           <p
