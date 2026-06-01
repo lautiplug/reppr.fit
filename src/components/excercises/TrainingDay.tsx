@@ -165,17 +165,17 @@ export const TrainingDay = ({
           style={{ paddingBottom: "calc(5.5rem + env(safe-area-inset-bottom, 0px))" }}
         >
           {alreadyDone ? (
-            <div className="flex flex-col gap-2 mt-6">
+            <div className="flex flex-col gap-2 mt-6 mb-3">
               <div className="flex gap-2">
                 <button
                   onClick={() => navigate("/session/summary")}
-                  className="flex-1 py-3 text-white font-semibold text-sm bg-black rounded-2xl flex items-center justify-center gap-1"
+                  className="flex-1 py-3 text-black  font-semibold text-sm bg-white rounded-2xl flex items-center justify-center gap-1"
                 >
                  <FileSpreadsheet size={16}/> Ver resumen
                 </button>
                 <button
                   onClick={() => startSession(workoutName, exercises)}
-                  className="flex-1 py-3 text-white font-semibold text-sm bg-black rounded-2xl flex items-center justify-center gap-1"
+                  className="flex-1 py-3 text-black font-semibold text-sm bg-white rounded-2xl flex items-center justify-center gap-1"
                 >
                   <span><Redo2/></span>
                   Repetir
