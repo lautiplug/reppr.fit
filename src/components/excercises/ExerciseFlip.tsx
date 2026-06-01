@@ -35,7 +35,7 @@ export function ExerciseFlip({ gifUrl, alt, playing = false, className, onLoad }
         loading="eager"
         fetchPriority="high"
         decoding="async"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="w-full h-auto block"
         style={{ animation: 'exercise-flip-0 2s ease-in-out infinite', animationPlayState: playState }}
       />
       <img
@@ -44,7 +44,7 @@ export function ExerciseFlip({ gifUrl, alt, playing = false, className, onLoad }
         aria-hidden
         loading="lazy"
         decoding="async"
-        className="absolute inset-0 w-full h-full object-cover"
+        className="absolute inset-0 w-full h-full object-contain"
         style={{ animation: 'exercise-flip-1 2s ease-in-out infinite', animationPlayState: playState }}
       />
     </div>

@@ -127,7 +127,7 @@ export function ExerciseStory({ ex, exIndex, total, onPrev, onNext, onSwap, hist
       <div className="relative">
         {/* GIF / placeholder */}
         {ex.gif_url ? (
-          <div className="relative h-52 overflow-hidden">
+          <div className="relative overflow-hidden">
             {!gifLoaded && <Skeleton className="absolute inset-0 rounded-none" />}
             <ExerciseFlip
               gifUrl={ex.gif_url}
